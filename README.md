@@ -1,13 +1,12 @@
 # toolUnRar
 
-批量解压缩带密码的压缩包的Python脚本
+用Python批量解压带密码的压缩包 
 
 A Python script for batch extraction with passwords
 
 直接拖入文件夹或rar文件即可
 
 Just drag in the folder or rar files
-<br>
 
 
 ## 需要 Needs
@@ -29,7 +28,6 @@ Python 3
 **目前仅能解压rar文件。**
 
 **Currently, only rar files can be extracted.**
-
 
 
 **目前仅支持中文版和英文版的WinRAR**
