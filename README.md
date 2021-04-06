@@ -40,7 +40,7 @@ If you need to extract 7z or other files which supported by 7-Zip, you need to i
 
 ## 用法 Usage
 
-直接拖入文件夹或压缩文件即可批量解压缩包含密码的压缩文件。如果拖入的是文件夹，则会把该文件夹下的压缩文件解压缩，但不进入下一级目录。通过设置PASSWD来设置字典，通过设置DELETEIT来设置解压后是否删除被成功解压的压缩文件。
+直接拖入文件夹或压缩文件即可批量解压缩包含密码的压缩文件。如果拖入的是文件夹，则会把该文件夹下的压缩文件解压缩，但不进入下一级目录。通过设置PASSWD来设置字典，通过设置DELETEIT来设置解压后是否删除被成功解压的压缩文件。本脚本会通过文件的后缀识别该文件是否为压缩文件。
 
 <br>
 
@@ -62,9 +62,9 @@ PASSWD： your passwords.
 
 <br>
 
-DELETEIT ：一个危险的参数。为真时，该脚本会直接删除成功解压的rar文件。为假则不会删除。
+DELETEIT ：一个危险的参数。为真时，该脚本会直接删除成功解压的压缩文件。为假则不会删除。
 
-DELETEIT：DANGER!! If it is True,will delete rar file after extraction
+DELETEIT：DANGER!! If it is True,will delete compressed file after extraction
 
 <br>
 
@@ -78,5 +78,9 @@ LOC_7Z：7-Zip的安装位置。
 
 LOC_7Z: location of 7-Zip
 
+<br>
 
+SAVE_MODE = True：如果该脚本无法通过后缀判断这是不是压缩文件，则不对该文件进行操作。
+
+SAVE_MODE = True：If the script cannot recognize the format of file from it's suffix, then do nothing with the file.
 
