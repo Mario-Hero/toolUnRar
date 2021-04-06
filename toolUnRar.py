@@ -6,6 +6,7 @@
 
 import sys
 import os
+import subprocess
 
 # you can change it >>>>>
 
@@ -54,33 +55,27 @@ def unrarFile(folder, file):
         #print(file)
     if ENABLE_RAR and file.endswith(".rar"):
         for wd in PASSWD:
-            extractStr = " x -y -p" + wd + " " + folder + "/" + file + " " + folder + "/"         
-            extM = os.popen("@\""+LOC_WINRAR+PROGRAM_RAR+"\""+extractStr).read().strip()
-            #print(extM)
-            #print(extM[-1])
-            if "is not RAR" in extM or "不是 RAR" in extM:
+            extractStr = " x -y -p" + wd + " " + folder + "\\" + file + " " + folder + "/"         
+            extM = subprocess.call("@\""+LOC_WINRAR+PROGRAM_RAR+"\""+extractStr,shell=True)
+            if extM == 1:
                 break
-            elif utfIsNumber(extM[-1]) or "错误" in extM or "无法" in extM or "errors" in extM or "Incorrect" in extM:
-                pass
+            elif extM == 11:
+                continue
+            elif extM != 0:
+                continue
             else:
-                if "正常" in extM or "OK" in extM :
-                    #print("Success: "+file)
-                    successThisFile = True
-                    break
+                successThisFile = True
+                break
     if not successThisFile:
         if ENABLE_7Z:
             for wd in PASSWD:
-                extractStr = " x -y -p" + wd + " " + folder + "/" + file + " -o " + folder + "/"         
-                extM = os.popen("@\""+LOC_WINRAR+PROGRAM_RAR+"\""+extractStr).read().strip()
-                #print(extM)
-                #print(extM[-1])
-                if utfIsNumber(extM[-1]) or "错误" in extM or "无法" in extM or "errors" in extM or "Incorrect" in extM:
-                    pass
+                extractStr = " x -y -p" + wd + " " + folder + "\\" + file + " -o" + folder + "/" 
+                extM = subprocess.call("@\""+LOC_7Z+PROGRAM_7Z+"\""+extractStr,shell=True)
+                if extM !=0:
+                    continue
                 else:
-                    if "正常" in extM or "OK" in extM :
-                        #print("Success: "+file)
-                        successThisFile = True
-                        break      
+                    successThisFile = True
+                    break      
     if not successThisFile: 
         print("Failed："+file)
     return successThisFile
