@@ -9,10 +9,11 @@ import os
 
 # you can change it >>>>>
 
-PASSWD = ["hello","123456","laksdjflkdf"] # the passwords
-DELETEIT = False # DANGER!! If it is True,will delete rar file after extraction
+PASSWD = ["hello","123456"] # the passwords
+DELETEIT = True # DANGER!! If it is True,will delete rar file after extraction
 LOC_WINRAR = "C:\\Program Files\\WinRAR\\" # location of WinRAR
-LOC_7Z = "C:\\Program Files\\7-Zip\\"
+LOC_7Z = "C:\\Program Files\\7-Zip\\" # location of 7-Zip
+SAVE_MODE = True # if the suffix of file is not like a compressed file, then do nothing with it.
 
 # <<<<< you can change it
 
@@ -21,9 +22,23 @@ PROGRAM_RAR  = "UnRAR.exe" # the program we use
 PROGRAM_7Z   = "7z.exe"    # the program we use
 LOC_S_WINRAR = ["C:\\Program Files\\WinRAR\\","C:\\Program Files (x86)\\WinRAR\\","./",""] # some possible locations of WinRAR
 LOC_S_7Z     = ["C:\\Program Files\\7-Zip\\","C:\\Program Files (x86)\\7-Zip\\","./",""]   # some possible locations of 7-Zip
+RAR_FILE = ["rar","zip","7z","tar","gz","XZ","BZIP2","GZIP","WIM","ARJ","CAB","CHM","CPIO","CramFS","DEB","DMG","FAT","HFS","ISO","LZH","LZMA","MBR","MSI","NSIS","NTFS","RAR","RPM","SquashFS","UDF","VHD","XAR","Z"]
+NOT_RAR_FILE = ["jpg","exe","png","mkv","mp4","mp3","avi","jpeg","wav","gif","mpeg","webp","txt","doc","docx","ppt","pptx","xls","xlsx","html","wps","torrent","swf","bmp"]
 
 ENABLE_RAR = False # initial state only
 ENABLE_7Z = False  # initial state only
+
+
+def isCompressedFile(file):
+    file = file.lower()
+    for rar in RAR_FILE:
+        if file.endswith("." + rar):
+            return True
+    for media in NOT_RAR_FILE:
+        if file.endswith("." + media):
+            return False
+    return not SAVE_MODE
+
 
 def utfIsNumber(uchar):
     return uchar >= u'\u0030' and uchar<=u'\u0039'
@@ -31,50 +46,41 @@ def utfIsNumber(uchar):
 
 def unrarFile(folder, file):
     successThisFile = False
-    testTime = 0
     if not folder:
         cutPos = file.rindex("\\")
         folder = file[:cutPos]
         file = file[cutPos+1:]
         #print(folder)
         #print(file)
-    while testTime <=1 and not successThisFile:
-        if ENABLE_RAR:
-            if (testTime == 0 and file.endswith(".rar")) or testTime == 1:
-                for wd in PASSWD:
-                    extractStr = " x -y -p" + wd + " " + folder + "/" + file + " " + folder + "/"         
-                    extM = os.popen("@\""+LOC_WINRAR+PROGRAM_RAR+"\""+extractStr).read().strip()
-                    #print(extM)
-                    #print(extM[-1])
-                    if "is not RAR" in extM or "不是 RAR" in extM:
-                        break
-                    elif utfIsNumber(extM[-1]) or "错误" in extM or "无法" in extM or "errors" in extM or "Incorrect" in extM:
-                        pass
-                    else:
-                        if "正常" in extM or "OK" in extM :
-                            #print("Success: "+file)
-                            successThisFile = True
-                            break
-        if successThisFile:
-            break
+    if ENABLE_RAR:
+        for wd in PASSWD:
+            extractStr = " x -y -p" + wd + " " + folder + "/" + file + " " + folder + "/"         
+            extM = os.popen("@\""+LOC_WINRAR+PROGRAM_RAR+"\""+extractStr).read().strip()
+            #print(extM)
+            #print(extM[-1])
+            if "is not RAR" in extM or "不是 RAR" in extM:
+                break
+            elif utfIsNumber(extM[-1]) or "错误" in extM or "无法" in extM or "errors" in extM or "Incorrect" in extM:
+                pass
+            else:
+                if "正常" in extM or "OK" in extM :
+                    #print("Success: "+file)
+                    successThisFile = True
+                    break
+    if not successThisFile:
         if ENABLE_7Z:
-            if (testTime == 0 and file.endswith(".7z")) or testTime == 1:
-                for wd in PASSWD:
-                    extractStr = " x -y -p" + wd + " " + folder + "/" + file + " -o " + folder + "/"         
-                    extM = os.popen("@\""+LOC_WINRAR+PROGRAM_RAR+"\""+extractStr).read().strip()
-                    #print(extM)
-                    #print(extM[-1])
-                    if utfIsNumber(extM[-1]) or "错误" in extM or "无法" in extM or "errors" in extM or "Incorrect" in extM:
-                        pass
-                    else:
-                        if "正常" in extM or "OK" in extM :
-                            #print("Success: "+file)
-                            successThisFile = True
-                            break
-        if successThisFile:
-            break
-        testTime = testTime + 1
-        
+            for wd in PASSWD:
+                extractStr = " x -y -p" + wd + " " + folder + "/" + file + " -o " + folder + "/"         
+                extM = os.popen("@\""+LOC_WINRAR+PROGRAM_RAR+"\""+extractStr).read().strip()
+                #print(extM)
+                #print(extM[-1])
+                if utfIsNumber(extM[-1]) or "错误" in extM or "无法" in extM or "errors" in extM or "Incorrect" in extM:
+                    pass
+                else:
+                    if "正常" in extM or "OK" in extM :
+                        #print("Success: "+file)
+                        successThisFile = True
+                        break      
     if not successThisFile: 
         print("Failed："+file)
     return successThisFile
@@ -90,13 +96,15 @@ def unrar(folder):
                 #unrar(folder +"/"+file)
                 pass
             else:
-                if unrarFile(folder, file):
-                    if DELETEIT:
-                        os.remove(folder + "/" + file)
+                if isCompressedFile(file):
+                    if unrarFile(folder, file):
+                        if DELETEIT:
+                            os.remove(folder + "/" + file)
     else:
-        if unrarFile("", folder):
-            if DELETEIT:
-                os.remove(folder)
+        if isCompressedFile(folder):
+            if unrarFile("", folder):
+                if DELETEIT:
+                    os.remove(folder)
             
         
 
