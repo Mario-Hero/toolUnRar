@@ -70,7 +70,7 @@ DELETEIT：DANGER!! If it is True,will delete rar file after extraction
 
 LOC_WINRAR = "C:\\Program Files\\WinRAR\\" 你的WinRAR安装位置。就算这个变量的设置的不对，该程序也会在可能的位置来寻找对应的程序。
 
-LOC_WINRAR: location of WinRAR
+LOC_WINRAR: location of WinRAR. Even the location doesn't set correctly. This script will try to find it in possible locations.
 
 <br>
 
