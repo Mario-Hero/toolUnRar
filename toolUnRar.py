@@ -52,7 +52,7 @@ def unrarFile(folder, file):
         file = file[cutPos+1:]
         #print(folder)
         #print(file)
-    if ENABLE_RAR:
+    if ENABLE_RAR and file.endswith(".rar"):
         for wd in PASSWD:
             extractStr = " x -y -p" + wd + " " + folder + "/" + file + " " + folder + "/"         
             extM = os.popen("@\""+LOC_WINRAR+PROGRAM_RAR+"\""+extractStr).read().strip()
