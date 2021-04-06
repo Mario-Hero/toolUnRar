@@ -48,12 +48,6 @@ If you need to extract 7z or other files which supported by 7-Zip, you need to i
 
 
 
-**目前仅支持中文版和英文版的WinRAR和7-Zip**
-
-Only Support WinRAR and 7-Zip of language of Chinese or English
-
-
-
 ## 参数 Parameters
 
 PASSWD = ["hello","123456"] ：你的密码本，该脚本会从这个数组中不断试验密码来解压缩，直到成功为止。
@@ -83,4 +77,6 @@ LOC_7Z: location of 7-Zip
 SAVE_MODE = True：如果该脚本无法通过后缀判断这是不是压缩文件，则不对该文件进行操作。
 
 SAVE_MODE = True：If the script cannot recognize the format of file from it's suffix, then do nothing with the file.
+
+
 
