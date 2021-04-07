@@ -10,7 +10,7 @@ import subprocess
 
 # you can change it >>>>>
 
-PASSWD = ["hello","123456"] # the passwords
+PASSWD = ["hello","123456"] # the possible passwords
 DELETEIT = True # DANGER!! If it is True,will delete rar file after extraction
 LOC_WINRAR = "C:\\Program Files\\WinRAR\\" # location of WinRAR
 LOC_7Z = "C:\\Program Files\\7-Zip\\" # location of 7-Zip
@@ -55,7 +55,7 @@ def unrarFile(folder, file):
         #print(file)
     if ENABLE_RAR and file.endswith(".rar"):
         for wd in PASSWD:
-            extractStr = " x -y -p" + wd + " " + folder + "\\" + file + " " + folder + "/"         
+            extractStr = " x -y -p" + wd + " \"" + folder + "\\" + file + "\" \"" + folder + "\\\""         
             extM = subprocess.call("@\""+LOC_WINRAR+PROGRAM_RAR+"\""+extractStr,shell=True)
             if extM == 1:
                 break
@@ -69,7 +69,7 @@ def unrarFile(folder, file):
     if not successThisFile:
         if ENABLE_7Z:
             for wd in PASSWD:
-                extractStr = " x -y -p" + wd + " " + folder + "\\" + file + " -o" + folder + "/" 
+                extractStr = " x -y -p" + wd + " \"" + folder + "\\" + file + "\" -o\"" + folder + "\\\"" 
                 extM = subprocess.call("@\""+LOC_7Z+PROGRAM_7Z+"\""+extractStr,shell=True)
                 if extM !=0:
                     continue
