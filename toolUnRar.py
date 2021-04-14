@@ -33,7 +33,7 @@ ENABLE_7Z = False  # initial state only
 def isCompressedFile(file):
     file = file.lower()
     for rar in RAR_FILE:
-        if file.endswith("." + rar):
+        if file.endswith("." + rar.lower()):
             return True
     for media in NOT_RAR_FILE:
         if file.endswith("." + media):
