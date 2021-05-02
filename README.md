@@ -1,5 +1,9 @@
 # toolUnRar
 
+**Last Update: 2021.05.02**
+
+
+
 批量解压缩带密码的压缩包的Python脚本
 
 A Python script for batch extraction with passwords
@@ -13,6 +17,12 @@ Just drag in the folder or rar files
 Support almost all formats of compressed file.
 
 可携带 Portable
+
+
+
+## 更新 Update
+
+2021.05.02: 新增在压缩包的注释里找密码的功能。Added the ability to find the password in the comments of the archive.
 
 
 
