@@ -10,8 +10,8 @@ import subprocess
 
 # you can change it >>>>>
 
-PASSWD     = ["hello","123456"]  # the possible passwords
-DELETEIT   = False                                      # DANGER!! If it is True,will delete rar file after extraction
+PASSWD     = ["123456","hello"]  # the possible passwords
+DELETEIT   = False                                     # DANGER!! If it is True,will delete rar file after extraction
 LOC_WINRAR = "C:\\Program Files\\WinRAR\\"              # location of WinRAR
 LOC_7Z     = "C:\\Program Files\\7-Zip\\"               # location of 7-Zip
 SAVE_MODE  = True                                       # if the suffix of file doesn't look like a compressed file, then do nothing with it.
@@ -206,12 +206,13 @@ def unrarFile(folder, file):
                                 break
             if successThisFile:
                 return True
-            for wd in PASSWD[1:]:
-                winRarReturn = winRarDo(folder, file, wd)
+            for index in range(1,len(PASSWD)):
+                winRarReturn = winRarDo(folder, file, PASSWD[index])
                 if winRarReturn == 1:
                     continue
                 elif winRarReturn == 0:
                     successThisFile = True
+                    PASSWD[0],PASSWD[index]=PASSWD[index],PASSWD[0]
                     break
                 elif winRarReturn == 2:
                     break
@@ -220,12 +221,13 @@ def unrarFile(folder, file):
             
     if not successThisFile:
         if ENABLE_7Z:
-            for wd in PASSWD:
-                z7Return = z7Do(folder, file, wd)
+            for index in range(len(PASSWD)):
+                z7Return = z7Do(folder, file, PASSWD[index])
                 if z7Return == 1:
                     continue
                 else:
                     successThisFile = True
+                    PASSWD[0],PASSWD[index]=PASSWD[index],PASSWD[0]
                     break
                      
     if not successThisFile: 
