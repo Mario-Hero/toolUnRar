@@ -187,23 +187,27 @@ def unrarFile(folder, file):
                 commentM = subprocess.getstatusoutput("@\""+LOC_WINRAR+PROGRAM_RAR+"\""+getCommentStr)
                 if commentM[0] == 0:
                     fileNameEncrypted = False
-                    comment = commentM[1][(commentM[1].index("\n\n")+2):commentM[1].index(folder)]
-                    comment = comment[0:comment.rindex("\n\n")]
-                    #print(comment)
-                    if comment:
-                        wdArray = guessWDComment(comment)
-                        print("Possible passwords:", wdArray)
-                        for wd in wdArray:
-                            winRarReturn = winRarDo(folder, file, wd)
-                            if winRarReturn == 1:
-                                continue
-                            elif winRarReturn == 0:
-                                successThisFile = True
-                                break
-                            elif winRarReturn == 2:
-                                break
-                            else:
-                                break
+                    try:
+                        comment = commentM[1][(commentM[1].index("\n\n")+2):commentM[1].index(folder)]
+                        comment = comment[0:comment.rindex("\n\n")]
+                    except:
+                        pass
+                    else:
+                        #print(comment)
+                        if comment:
+                            wdArray = guessWDComment(comment)
+                            print("Possible passwords:", wdArray)
+                            for wd in wdArray:
+                                winRarReturn = winRarDo(folder, file, wd)
+                                if winRarReturn == 1:
+                                    continue
+                                elif winRarReturn == 0:
+                                    successThisFile = True
+                                    break
+                                elif winRarReturn == 2:
+                                    break
+                                else:
+                                    break
             if successThisFile:
                 return True
             for index in range(1,len(PASSWD)):
