@@ -11,7 +11,7 @@ import subprocess
 # you can change it >>>>>
 
 PASSWD     = ["123456","hello"]  # the possible passwords
-DELETEIT   = True                                      # DANGER!! If it is True,will delete rar file after extraction
+DELETEIT   = False                                      # DANGER!! If it is True,will delete rar file after extraction
 LOC_WINRAR = "C:\\Program Files\\WinRAR\\"              # location of WinRAR
 LOC_7Z     = "C:\\Program Files\\7-Zip\\"               # location of 7-Zip
 SAVE_MODE  = True                                       # if the suffix of file doesn't look like a compressed file, then do nothing with it.
