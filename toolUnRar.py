@@ -11,7 +11,7 @@ import subprocess
 # you can change it >>>>>
 
 PASSWD     = ["123456","hello"]  # the possible passwords
-DELETEIT   = False                                     # DANGER!! If it is True,will delete rar file after extraction
+DELETEIT   = True                                      # DANGER!! If it is True,will delete rar file after extraction
 LOC_WINRAR = "C:\\Program Files\\WinRAR\\"              # location of WinRAR
 LOC_7Z     = "C:\\Program Files\\7-Zip\\"               # location of 7-Zip
 SAVE_MODE  = True                                       # if the suffix of file doesn't look like a compressed file, then do nothing with it.
@@ -35,6 +35,13 @@ GUESS_FLAG_START_2  = ["是", "为", "is", "are"," "]          #1
 GUESS_FLAG_END      = ["\n","   "]                           #2
 GUESS_FLAG_DIVIDE   = ["或是", "或", " or "]                 #3
 # <<< for guessing
+
+ERROR_LIST = ""
+
+
+def logError(comment):
+    global ERROR_LIST
+    ERROR_LIST=ERROR_LIST+comment+'\n'
 
 
 def guessWDComment(comment):
@@ -125,6 +132,47 @@ def guessWDComment(comment):
     return guess_wd
 
 
+def fileNameGuess(fileName):
+    global PASSWD
+    for wd in GUESS_FLAG_INIT:
+        if wd in fileName:
+            wdArray = guessWDComment(fileName)
+            if wdArray != ['']:
+                PASSWD = wdArray + PASSWD
+                return True
+    if ' ' in fileName:
+        PASSWD.insert(0, fileName[fileName.rindex(' '):])
+    else:
+        PASSWD.insert(0, fileName)
+    return False
+
+
+def getPWFromFolder(file):
+    if os.path.isdir(file):
+        folderName = os.path.split(file)[1]
+        fileNameGuess(folderName)
+        file_list = os.listdir(file)
+        for oneFile in file_list:
+            if oneFile.endswith('.txt'):
+                oneFileName = oneFile[:-4]
+                fileNameGuess(oneFileName)
+            elif os.path.isdir(os.path.join(file, oneFile)):
+                fileNameGuess(oneFile)
+    else:
+        folder, fileName = os.path.split(file)
+        fileNamePart = fileName[:fileName.rindex('.')]
+        folderName = os.path.split(folder)[1]
+        fileNameGuess(fileNamePart)
+        fileNameGuess(folderName)
+        file_list = os.listdir(folder)
+        for oneFile in file_list:
+            if oneFile.endswith('.txt'):
+                oneFileName = oneFile[:-4]
+                fileNameGuess(oneFileName)
+            elif os.path.isdir(os.path.join(folder, oneFile)):
+                fileNameGuess(oneFile)
+
+
 def isCompressedFile(file):
     file = file.lower()
     for rar in RAR_FILE:
@@ -142,11 +190,14 @@ def utfIsNumber(uchar):
 
 def winRarDo(folder, file, wd):
     extractStr = " x -y -p" + wd + " \"" + folder + "\\" + file + "\" \"" + folder + "\\\""
-    extM = subprocess.call("@\""+LOC_WINRAR+PROGRAM_RAR+"\""+extractStr,shell=True)     
+    extM = subprocess.call("@\""+LOC_WINRAR+PROGRAM_RAR+"\""+extractStr,shell=True)
+    # print("winrar", extM)
     if extM == 1:    # not rar file
         return 2
-    elif extM == 11: # wrong password
+    elif extM == 11:  # wrong password
         return 1
+    elif extM == 2:  # broken file
+        return 3
     elif extM != 0:  # error
         return 1
     else:
@@ -156,8 +207,12 @@ def winRarDo(folder, file, wd):
 def z7Do(folder, file, wd):
     extractStr = " x -y -p" + wd + " \"" + folder + "\\" + file + "\" -o\"" + folder + "\\\"" 
     extM = subprocess.call("@\""+LOC_7Z+PROGRAM_7Z+"\""+extractStr,shell=True)
-    if extM !=0: # error
-        return 1
+    # print("7z", extM)
+    if extM !=0:  # error
+        if extM == 2:  # fatal error
+            return 1
+        else:
+            return 1
     else:
         return 0
 
@@ -203,6 +258,7 @@ def unrarFile(folder, file):
                                     continue
                                 elif winRarReturn == 0:
                                     successThisFile = True
+                                    PASSWD.insert(0, wd)
                                     break
                                 elif winRarReturn == 2:
                                     break
@@ -227,15 +283,18 @@ def unrarFile(folder, file):
         if ENABLE_7Z:
             for index in range(len(PASSWD)):
                 z7Return = z7Do(folder, file, PASSWD[index])
-                if z7Return == 1:
+                if z7Return != 1:
                     continue
+                elif z7Return == 3:
+                    logError("Broken file: "+file)
+                    return successThisFile
                 else:
                     successThisFile = True
                     PASSWD[0],PASSWD[index]=PASSWD[index],PASSWD[0]
                     break
                      
     if not successThisFile: 
-        print("Failed："+file)
+        logError("No passsword for: "+file)
     return successThisFile
 
 
@@ -244,7 +303,7 @@ def unrar(folder):
         print(folder)
         file_list = os.listdir(folder)
         for file in file_list:
-            if os.path.isdir(folder + "/" + file):
+            if os.path.isdir(os.path.join(folder, file)):
                 #print(folder +"/"+ file)
                 #unrar(folder +"/"+file)
                 pass
@@ -252,7 +311,7 @@ def unrar(folder):
                 if isCompressedFile(file):
                     if unrarFile(folder, file):
                         if DELETEIT:
-                            os.remove(folder + "/" + file)
+                            os.remove(os.path.join(folder, file))
     else:
         if isCompressedFile(folder):
             if unrarFile("", folder):
@@ -288,11 +347,19 @@ if __name__ == '__main__':
     if (not ENABLE_RAR) and (not ENABLE_7Z):
         print("Cannot find winRAR and 7-zip")
         sys.exit(1)
-    while len(PASSWD) < 2:
-        PASSWD.append("0")   
-    for folder in sys.argv[1:]:
-        #print(folder)
-        unrar(folder)
-    print("Finish.")
-    #subprocess.call("pause",shell=True)
-    sys.exit(0)
+    if len(sys.argv) > 1:
+        while len(PASSWD) < 2:
+            PASSWD.append("0")
+        getPWFromFolder(sys.argv[1])
+        if len(sys.argv) == 2 and os.path.isfile(sys.argv[1]):
+            SAVE_MODE = False
+        # print(PASSWD)
+        # subprocess.call("pause", shell=True)
+        for folder in sys.argv[1:]:
+            #print(folder)
+            unrar(folder)
+        print("Finish.")
+        if ERROR_LIST:
+            print(ERROR_LIST)
+            subprocess.call("pause", shell=True)
+        sys.exit(0)
