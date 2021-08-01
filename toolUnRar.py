@@ -283,7 +283,7 @@ def unrarFile(folder, file):
         if ENABLE_7Z:
             for index in range(len(PASSWD)):
                 z7Return = z7Do(folder, file, PASSWD[index])
-                if z7Return != 1:
+                if z7Return == 1:
                     continue
                 elif z7Return == 3:
                     logError("Broken file: "+file)
