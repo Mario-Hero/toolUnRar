@@ -1,6 +1,6 @@
 # toolUnRar
 
-**Last Update: 2021.05.02**
+**Last Update: 2021.08.01**
 
 
 
@@ -22,7 +22,17 @@ Support almost all formats of compressed file.
 
 ## 更新 Update
 
-2021.05.02: 新增在压缩包的注释里找密码的功能。Added the ability to find the password in the comments of the archive.
+**2021.08.01:** 新增在压缩包所在的文件夹里找密码的功能。该程序会遍历该文件夹下的所有文件夹的名称和所有txt文件的文件名，并暂时添加到密码库中。Add the ability to find the password in the folder where the archive is located. The program will traverse the names of all folders and txt files under the parent folder , and temporarily add them to the password library.
+
+如下图，在解压该文件夹下的某个压缩文件时，0001~0007均会添加到密码本的开头。
+
+As shown in the picture below, 0001 ~ 0007 will be added to the beginning of password library when extracting a compressed file under this folder.
+
+<img src="https://raw.githubusercontent.com/Mario-Hero/toolUnRar/main/pic/1.jpg" style="zoom:67%;" />
+
+
+
+**2021.05.02:** 新增在压缩包的注释里找密码的功能。Added the ability to find the password in the comments of the archive.
 
 
 
