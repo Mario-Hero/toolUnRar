@@ -160,7 +160,10 @@ def getPWFromFolder(file):
                 fileNameGuess(oneFile)
     else:
         folder, fileName = os.path.split(file)
-        fileNamePart = fileName[:fileName.rindex('.')]
+        if "." in fileName:
+            fileNamePart = fileName[:fileName.rindex('.')]
+        else:
+            fileNamePart=fileName
         folderName = os.path.split(folder)[1]
         fileNameGuess(fileNamePart)
         fileNameGuess(folderName)
@@ -174,13 +177,14 @@ def getPWFromFolder(file):
 
 
 def isCompressedFile(file):
-    file = file.lower()
-    for rar in RAR_FILE:
-        if file.endswith("." + rar):
-            return True
-    for media in NOT_RAR_FILE:
-        if file.endswith("." + media):
-            return False
+    if "." in file:
+        file = file.lower()
+        for rar in RAR_FILE:
+            if file.endswith("." + rar):
+                return True
+        for media in NOT_RAR_FILE:
+            if file.endswith("." + media):
+                return False
     return not SAVE_MODE
 
 
@@ -221,9 +225,10 @@ def unrarFile(folder, file):
     successThisFile = False
     fileNameEncrypted = True
     if not folder:
-        cutPos = file.rindex("\\")
-        folder = file[:cutPos]
-        file = file[cutPos+1:]
+        folder, file = os.path.split(file)
+        #cutPos = file.rindex("\\")
+        #folder = file[:cutPos]
+        #file = file[cutPos+1:]
         #print(folder)
         #print(file)
     if ENABLE_RAR and file.endswith(".rar"):
