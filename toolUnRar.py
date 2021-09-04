@@ -10,7 +10,7 @@ import subprocess
 
 # you can change it >>>>>
 
-PASSWD     = ["123456","hello"]  # the possible passwords
+PASSWD     = ["hello","123456"]  # the possible passwords
 DELETEIT   = False                                      # DANGER!! If it is True,will delete rar file after extraction
 LOC_WINRAR = "C:\\Program Files\\WinRAR\\"              # location of WinRAR
 LOC_7Z     = "C:\\Program Files\\7-Zip\\"               # location of 7-Zip
@@ -142,8 +142,7 @@ def fileNameGuess(fileName):
                 return True
     if ' ' in fileName:
         PASSWD.insert(0, fileName[fileName.rindex(' '):])
-    else:
-        PASSWD.insert(0, fileName)
+    PASSWD.insert(0, fileName)
     return False
 
 
@@ -193,7 +192,7 @@ def utfIsNumber(uchar):
 
 
 def winRarDo(folder, file, wd):
-    extractStr = " x -y -p" + wd + " \"" + folder + "\\" + file + "\" \"" + folder + "\\\""
+    extractStr = " x -y -\"p" + wd + "\" \"" + folder + "\\" + file + "\" \"" + folder + "\\\""
     extM = subprocess.call("@\""+LOC_WINRAR+PROGRAM_RAR+"\""+extractStr,shell=True)
     # print("winrar", extM)
     if extM == 1:    # not rar file
@@ -209,7 +208,7 @@ def winRarDo(folder, file, wd):
 
 
 def z7Do(folder, file, wd):
-    extractStr = " x -y -p" + wd + " \"" + folder + "\\" + file + "\" -o\"" + folder + "\\\"" 
+    extractStr = " x -y -\"p" + wd + "\" \"" + folder + "\\" + file + "\" -o\"" + folder + "\\\"" 
     extM = subprocess.call("@\""+LOC_7Z+PROGRAM_7Z+"\""+extractStr,shell=True)
     # print("7z", extM)
     if extM !=0:  # error
