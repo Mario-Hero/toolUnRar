@@ -103,5 +103,6 @@ SAVE_MODE = True：If the script cannot recognize the format of file from it's s
 <br>
 
 MULTI_UNRAR = DELETEIT and True：为真时支持双重解压，要求DELETEIT也为真。
+
 MULTI_UNRAR = DELETEIT and True：unzip double compressed files if MULTI_UNRAR and DELETEIT is True
 
