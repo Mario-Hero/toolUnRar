@@ -38,7 +38,7 @@ As shown in the picture below, 0001 ~ 0007 will be added to the beginning of pas
 
 
 
-## 需要 Needs
+## 依赖 Dependency
 
 **Windows系统**
 
