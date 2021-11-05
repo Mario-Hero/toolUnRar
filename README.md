@@ -1,6 +1,6 @@
 # toolUnRar
 
-**Last Update: 2021.08.01**
+**Last Update: 2021.11.05**
 
 
 
@@ -21,6 +21,8 @@ Support almost all formats of compressed file.
 
 
 ## 更新 Update
+
+**2021.11.05:** 支持直接解压双重压缩文件（假如压缩包里又套一个压缩包，就可以继续解压），使用参数 **MULTI_UNRAR** 进行设置。支持解压与压缩包同名的文件。Support direct extraction of double compressed files (if there is another compressed package in this package, the program can continue to extract files), use the parameter **MULTI_UNRAR** to set. Support extracting files with the same name as the compressed package.
 
 **2021.08.01:** 新增在压缩包所在的文件夹里找密码的功能。该程序会遍历该文件夹下的所有文件夹的名称和所有txt文件的文件名，并暂时添加到密码库中。Add the ability to find the password in the folder where the archive is located. The program will traverse the names of all folders and txt files under the parent folder , and temporarily add them to the password library.
 
