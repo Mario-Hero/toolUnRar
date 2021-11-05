@@ -100,5 +100,8 @@ SAVE_MODE = True：如果该脚本无法通过后缀判断这是不是压缩文�
 
 SAVE_MODE = True：If the script cannot recognize the format of file from it's suffix, then do nothing with the file.
 
+<br>
 
+MULTI_UNRAR = DELETEIT and True：为真时支持双重解压，要求DELETEIT也为真。
+MULTI_UNRAR = DELETEIT and True：unzip double compressed files if MULTI_UNRAR and DELETEIT is True
 
