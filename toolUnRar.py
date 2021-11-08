@@ -243,7 +243,7 @@ def unrarFile(folder, file):
         folder, file = os.path.split(file)
     originalName = file
     if RENAME_UNRAR:
-        if file.rfind('.'):
+        if '.' in file:
             fileExtension = file[file.rindex('.'):]
         else:
             fileExtension = ''
