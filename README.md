@@ -6,11 +6,11 @@
 
 批量解压缩带密码的压缩包的Python脚本
 
-A Python script for batch extraction with passwords
+A Python script for batch rar extraction with passwords
 
 直接拖入文件夹或压缩文件即可
 
-Just drag in the folder or rar files
+Just drag the folder or rar files onto the script.
 
 支持解压几乎所有压缩文件格式。
 
