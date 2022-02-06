@@ -44,9 +44,9 @@ As shown in the picture below, 0001 ~ 0007 will be added to the beginning of pas
 
 Python 3
 
-对于解压RAR文件，需要安装WinRAR 
+对于解压RAR文件，需要安装WinRAR，或者直接打包下载本项目即可。
 
-对于解压7z/zip等其他7-Zip支持解压的文件，需要安装7-Zip
+对于解压7z/zip等其他7-Zip支持解压的文件，需要安装7-Zip，或者直接打包下载本项目即可。
 
 <br>
 
@@ -54,9 +54,9 @@ Python 3
 
 Python 3
 
-If you need to extract RAR files, you need to install WinRAR.
+If you need to extract RAR files, you need to install WinRAR or download all the files of this project.
 
-If you need to extract 7z or other files which supported by 7-Zip, you need to install 7-Zip. 
+If you need to extract 7z or other files which supported by 7-Zip, you need to install 7-Zip or download all the files of this project.
 
 
 
