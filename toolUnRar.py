@@ -11,8 +11,8 @@ import datetime
 
 # you can change it >>>>>
 
-PASSWD     = ["hello","6666"]  # the possible passwords
-DELETEIT   = False                                      # 解压后删除压缩包 DANGER!! If it is True,will delete rar file after extraction
+PASSWD     = ["123","6666"]  # the possible passwords
+DELETEIT   = False                                       # 解压后删除压缩包 DANGER!! If it is True,will delete rar file after extraction
 LOC_WINRAR = "C:\\Program Files\\WinRAR\\"              # location of WinRAR
 LOC_7Z     = "C:\\Program Files\\7-Zip\\"               # location of 7-Zip
 SAVE_MODE  = True                                       # 如果文件后缀看上去不像压缩文件，就不解压，除非它是唯一选择的文件 if the extension name of file doesn't look like a compressed file, then do nothing with it.
@@ -208,8 +208,9 @@ def fileRename(file, n):
 
 
 def winRarDo(folder, file, wd):
-    extractStr = " x -y -\"p" + wd + "\" \"" + folder + "\\" + file + "\" \"" + folder + "\\\""
-    extM = subprocess.call("@\""+LOC_WINRAR+PROGRAM_RAR+"\""+extractStr,shell=True)
+    # extractStr = " x -y -\"p" + wd + "\" \"" + folder + "\\" + file + "\" \"" + folder + "\\\""
+    # extM = subprocess.call("@\""+LOC_WINRAR+PROGRAM_RAR+"\""+extractStr,shell=True)
+    extM = subprocess.call([os.path.join(LOC_WINRAR,PROGRAM_RAR), 'x', '-y', '-p'+wd, os.path.join(folder, file), folder], shell=True)
     # print("winrar", extM)
     if extM == 1:    # not rar file
         return 2
@@ -224,8 +225,10 @@ def winRarDo(folder, file, wd):
 
 
 def z7Do(folder, file, wd):
-    extractStr = " x -y -\"p" + wd + "\" \"" + folder + "\\" + file + "\" -o\"" + folder + "\\\"" 
-    extM = subprocess.call("@\""+LOC_7Z+PROGRAM_7Z+"\""+extractStr,shell=True)
+    # extractStr = " x -y -\"p" + wd + "\" \"" + folder + "\\" + file + "\" -o\"" + folder + "\\\""
+    # extM = subprocess.call("@\""+LOC_7Z+PROGRAM_7Z+"\""+extractStr,shell=True)
+    extM = subprocess.call([os.path.join(LOC_7Z, PROGRAM_7Z), 'x', '-y', '-p' + wd, os.path.join(folder, file), '-o' + folder], shell=True)
+
     # print("7z", extM)
     if extM !=0:  # error
         if extM == 2:  # fatal error
@@ -238,7 +241,6 @@ def z7Do(folder, file, wd):
 
 def unrarFile(folder, file):
     successThisFile = False
-    fileNameEncrypted = True
     if not folder:
         folder, file = os.path.split(file)
     originalName = file
@@ -342,15 +344,23 @@ def multiUnrar():
     if MULTI_UNRAR:
         newSpaceFiles = os.listdir(workSpace)
         for file in newSpaceFiles:
-            if os.path.isdir(os.path.join(workSpace, file)):
-                pass
+            if os.path.isfile(os.path.join(workSpace, file)):
+                if file not in lastSpaceFiles or (file == lastFileName and DELETEIT):
+                    newFileSize = os.path.getsize(os.path.join(workSpace, file))
+                    if newFileSize*1.3 > lastFileSize:
+                        unrarFile(workSpace, file)
+                        break
             else:
-                if isCompressedFile(file):
-                    if file not in lastSpaceFiles or (file == lastFileName and DELETEIT):
-                        newFileSize = os.path.getsize(os.path.join(workSpace, file))
-                        if newFileSize*1.3 > lastFileSize:
-                            unrarFile(workSpace, file)
-                            break
+                if file not in lastSpaceFiles:
+                    newFileList = os.listdir(os.path.join(workSpace, file))
+                    if len(newFileList) < 5:
+                        for rarFile in newFileList:
+                            filePath = os.path.join(workSpace, file, rarFile)
+                            if isCompressedFile(filePath):
+                                newFileSize = os.path.getsize(filePath)
+                                if newFileSize * 1.3 > lastFileSize:
+                                    unrarFile('', filePath)
+                                    break
 
 
 def unrar(folder):
@@ -368,6 +378,7 @@ def unrar(folder):
                     lastFileName = file
                     lastFileSize = os.path.getsize(os.path.join(folder, file))
                     unrarFile(folder, file)
+                    lastSpaceFiles = os.listdir(folder)
     else:
         if isCompressedFile(folder):
             workSpace = os.path.split(folder)[0]
@@ -416,7 +427,7 @@ if __name__ == '__main__':
         addWD = newPasswordLength - oldPasswordLength
         if addWD > 8:
             PASSWD = PASSWD[addWD:] + PASSWD[:addWD]
-        if len(sys.argv) == 2 and os.path.isfile(sys.argv[1]):
+        if os.path.isfile(sys.argv[1]):
             SAVE_MODE = False
         # print(PASSWD)
         # subprocess.call("pause", shell=True)
