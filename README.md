@@ -1,6 +1,6 @@
 # toolUnRar
 
-**Last Update: 2021.11.05**
+**Last Update: 2022.02.14**
 
 
 
@@ -12,6 +12,10 @@ A Python script for batch rar extraction with passwords
 
 Just drag the folder or rar files onto the script.
 
+能分析压缩包注释、附近文件的文件名来获取密码
+
+Able to analyze the comments of the compressed package and the file names of nearby files to obtain the password.
+
 支持解压几乎所有压缩文件格式。
 
 Support almost all formats of compressed file.
@@ -22,9 +26,11 @@ Support almost all formats of compressed file.
 
 ## 更新 Update
 
+**2022.02.14:** 支持解压形如abc.7z.001和abc.part1.rar的分卷压缩文件（但是不会对分卷进行批量重命名避免解压时文件名重复的问题，我真不信有人分卷解压出来还是一样文件名的分卷的）。Support decompressing multi-part compressed files, such as abc.7z.001 and abc.part1.rar.
+
 **2021.11.05:** 支持直接解压双重压缩文件（假如压缩包里又套一个压缩包，就可以继续解压），使用参数 **MULTI_UNRAR** 进行设置。支持解压与压缩包同名的文件。Support direct extraction of double compressed files (if there is another compressed package in this package, the program can continue to extract files), use the parameter **MULTI_UNRAR** to set. Support extracting files with the same name as the compressed package.
 
-**2021.08.01:** 新增在压缩包所在的文件夹里找密码的功能。该程序会遍历该文件夹下的所有文件夹的名称和所有txt文件的文件名，并暂时添加到密码库中。Add the ability to find the password in the folder where the archive is located. The program will traverse the names of all folders and txt files under the parent folder , and temporarily add them to the password library.
+**2021.08.01:** 新增在压缩包所在的文件夹里找密码的功能。该程序会遍历分析该文件夹下的所有文件夹的名称和所有txt文件的文件名，并暂时添加到密码库中。Add the ability to find the password in the folder where the archive is located. The program will traverse the names of all folders and txt files under the parent folder , and temporarily add them to the password library.
 
 如下图，在解压该文件夹下的某个压缩文件时，0001~0007均会添加到密码本的开头。
 
@@ -32,27 +38,17 @@ As shown in the picture below, 0001 ~ 0007 will be added to the beginning of pas
 
 <img src="https://raw.githubusercontent.com/Mario-Hero/toolUnRar/main/pic/1.jpg" style="zoom:67%;" />
 
-
-
 **2021.05.02:** 新增在压缩包的注释里找密码的功能。Added the ability to find the password in the comments of the archive.
-
-
 
 ## 依赖 Dependency
 
-**Windows系统**
+**Windows**
 
 Python 3
 
 对于解压RAR文件，需要安装WinRAR，或者直接打包下载本项目即可。
 
 对于解压7z/zip等其他7-Zip支持解压的文件，需要安装7-Zip，或者直接打包下载本项目即可。
-
-<br>
-
-**Windows**
-
-Python 3
 
 If you need to extract RAR files, you need to install WinRAR or download all the files of this project.
 
@@ -68,7 +64,11 @@ If you need to extract 7z or other files which supported by 7-Zip, you need to i
 
 你可以把WinRAR目录下的Unrar.exe和7-Zip目录下的7z.exe直接复制到这个toolUnRar.py文件的相同目录下，这样就可以携带使用了。
 
+## 支持的密码表示形式 Supported password formats
 
+该脚本能够从父级文件夹的名称、父级文件夹下的所有文件夹的名称和所有txt文件的文件名中获取密码，可以识别：password: xxx, password xxx, 密码：xxx，密码:xxx, 密码 xxx. 如果不包含密码和password这两个关键字，该脚本会按空格分隔文本，并把它们都暂时加入密码本。
+
+The script can obtain the password from the name of the parent folder, the names of all folders and txt files under the parent folder. It can identify format like these: password: xxx, password xxx, 密码：xxx，密码:xxx, 密码 xxx.  If the two keywords password and 密码 are not included, the script will separate the text by spaces and temporarily add them to the password list.
 
 ## 参数 Parameters
 
@@ -106,3 +106,6 @@ MULTI_UNRAR = DELETEIT and True：为真时支持双重解压，要求DELETEIT�
 
 MULTI_UNRAR = DELETEIT and True：unzip double compressed files if MULTI_UNRAR and DELETEIT is True
 
+## License
+
+The project is released under GNU General Public License v3.0.
