@@ -499,11 +499,10 @@ if __name__ == '__main__':
         if os.path.isfile(sys.argv[1]):
             SAVE_MODE = False
         # print(PASSWD)
-        # subprocess.call("pause")
         for inputFolder in sys.argv[1:]:
             # print(inputFolder)
             unrarFun1(inputFolder)
         print("Finish.")
         if ERROR_LIST:
             print(ERROR_LIST)
-            subprocess.call("pause")
+            os.system("pause")
