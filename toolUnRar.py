@@ -7,138 +7,150 @@
 import sys
 import os
 import subprocess
-import datetime
+
+try:
+    import datetime
+except ImportError:
+    os.system('pip install datetime')
+    import datetime
 
 # you can change it >>>>>
 
-PASSWD     = ["123","6666"]  # the possible passwords
-DELETEIT   = False                                       # 解压后删除压缩包 DANGER!! If it is True,will delete rar file after extraction
-LOC_WINRAR = "C:\\Program Files\\WinRAR\\"              # location of WinRAR
-LOC_7Z     = "C:\\Program Files\\7-Zip\\"               # location of 7-Zip
-SAVE_MODE  = True                                       # 如果文件后缀看上去不像压缩文件，就不解压，除非它是唯一选择的文件 if the extension name of file doesn't look like a compressed file, then do nothing with it.
-MULTI_UNRAR = DELETEIT and True                         # 解压双重压缩文件 unzip double compressed files
+PASSWD = ['666', '123456']  # 可能的密码 possible passwords
+DELETEIT = True  # 注意！解压后删除压缩包 DANGER!! If it is True,will delete rar file after extraction
+LOC_WINRAR = "C:\\Program Files\\WinRAR\\"  # location of WinRAR
+LOC_7Z = "C:\\Program Files\\7-Zip\\"  # location of 7-Zip
+SAVE_MODE = True  # 如果文件后缀看上去不像压缩文件，就不解压，除非用户拖入的是文件 if the extension name of file doesn't look like a compressed file, then do nothing with it, unless the user drag files into this script.
+MULTI_UNRAR = DELETEIT and True  # 解压双重压缩文件 unzip double compressed files
 
 # <<<<< you can change it
 
 
-PROGRAM_RAR  = "UnRAR.exe" # the program we use
-PROGRAM_7Z   = "7z.exe"    # the program we use
-LOC_S_WINRAR = ["C:\\Program Files\\WinRAR\\","C:\\Program Files (x86)\\WinRAR\\","./",""] # some possible locations of WinRAR
-LOC_S_7Z     = ["C:\\Program Files\\7-Zip\\","C:\\Program Files (x86)\\7-Zip\\","./",""]   # some possible locations of 7-Zip
-RAR_FILE     = ["rar","zip","7z","tar","gz","xz","bzip2","gzip","wim","arj","cab","chm","cpio","cramfs","deb","dmg","fat","hfs","iso","lzh","lzma","mbr","msi","nsis","ntfs","rpm","squashfs","udf","vhd","xar","z"]
-NOT_RAR_FILE = ["jpg","exe","png","mkv","mp4","mp3","avi","mov","jpeg","wav","gif","mpeg","webp","txt","doc","docx","ppt","pptx","xls","xlsx","html","wps","torrent","swf","bmp","crdownload","xltd","downloading"]
-ENABLE_RAR = False         # initial state only
-ENABLE_7Z = False          # initial state only
+PROGRAM_RAR = "UnRAR.exe"  # the program we use
+PROGRAM_7Z = "7z.exe"  # the program we use
+LOC_S_WINRAR = ["C:\\Program Files\\WinRAR\\", "C:\\Program Files (x86)\\WinRAR\\", "./",
+                ""]  # some possible locations of WinRAR
+LOC_S_7Z = ["C:\\Program Files\\7-Zip\\", "C:\\Program Files (x86)\\7-Zip\\", "./",
+            ""]  # some possible locations of 7-Zip
+RAR_FILE = ["rar", "zip", "7z", "tar", "gz", "xz", "bzip2", "gzip", "wim", "arj", "cab", "chm", "cpio", "cramfs", "deb",
+            "dmg", "fat", "hfs", "iso", "lzh", "lzma", "mbr", "msi", "nsis", "ntfs", "rpm", "squashfs", "udf", "vhd",
+            "xar", "z"]
+NOT_RAR_FILE = ["jpg", "exe", "png", "mkv", "mp4", "mp3", "avi", "mov", "jpeg", "wav", "gif", "mpeg", "webp", "txt",
+                "doc", "docx", "ppt", "pptx", "xls", "xlsx", "html", "wps", "torrent", "swf", "bmp", "crdownload",
+                "xltd", "downloading"]
+ENABLE_RAR = False  # initial state only
+ENABLE_7Z = False  # initial state only
 
-RENAME_UNRAR = True        # 防止解压的文件与压缩包重名 In order to prevent that the decompressed file has the same name with current file, we rename the compressed file first
+RENAME_UNRAR = True  # 防止解压的文件与压缩包重名 In order to prevent that the decompressed file has the same name with current file, we rename the compressed file first
 
 # for guessing >>>
-GUESS_FLAG_INIT     = ["密码", "码", "password", "Password"]  #0
-GUESS_FLAG_START_1  = [":", "："]                            #1
-GUESS_FLAG_START_2  = ["是", "为", "is", "are"," "]           #1
-GUESS_FLAG_END      = ["\n","   "]                           #2
-GUESS_FLAG_DIVIDE   = ["或是", "或", " or "]                  #3
+GUESS_FLAG_INIT = ["密码", "码", "password", "Password"]  # 0
+GUESS_FLAG_START_1 = [":", "："]  # 1
+GUESS_FLAG_START_2 = ["是", "为", "is", "are", " "]  # 1
+GUESS_FLAG_END = ["\n", "   "]  # 2
+GUESS_FLAG_DIVIDE = ["或是", "或", " or "]  # 3
 # <<< for guessing
 
 ERROR_LIST = ""
 workSpace = ""
 lastFileName = ""
 lastFileSize = 0
-lastSpaceFiles = {}
-newSpaceFiles = {}
-
+lastSpaceFiles = []
+newSpaceFiles = []
+multiPartList = []
+multiPartExtracted = []
 
 def logError(comment):
     global ERROR_LIST
-    ERROR_LIST=ERROR_LIST+comment+'\n'
+    ERROR_LIST += comment + '\n'
 
 
 def guessWDComment(comment):
-    guess_flag = 0
-    guess_wd: list[str] = []
-    guess_ps = 0
+    guessFlag = 0
+    guessWD = []
+    guessPS = 0
     cutIn = 0
     cutOut = 0
     while True:
-        if guess_flag == 0:
-            guess_newPs = len(comment)
-            guess_len = 0
+        if guessFlag == 0:
+            guessNewPS = len(comment)
+            guessLen = 0
             for initStr in GUESS_FLAG_INIT:
-                ps_temp = comment.find(initStr, guess_ps)
-                if ps_temp == -1:
+                PSTemp = comment.find(initStr, guessPS)
+                if PSTemp == -1:
                     continue
                 else:
-                    if ps_temp<guess_newPs:
-                        guess_newPs = ps_temp
-                        guess_len = len(initStr)
-            if guess_newPs == len(comment):
-                if not guess_wd:
+                    if PSTemp < guessNewPS:
+                        guessNewPS = PSTemp
+                        guessLen = len(initStr)
+            if guessNewPS == len(comment):
+                if not guessWD:
                     cutIn = 0
                     cutOut = len(comment)
-                    guess_flag = 3
+                    guessFlag = 3
                 else:
                     break
             else:
-                guess_ps = guess_newPs + guess_len
-                guess_flag = 1
-        elif guess_flag == 1:
-            found_temp = False
-            found_temp_2 = False
-            guess_newPs = len(comment)
+                guessPS = guessNewPS + guessLen
+                guessFlag = 1
+        elif guessFlag == 1:
+            foundTemp = False
+            foundTemp2 = False
+            guessNewPS = len(comment)
             for startStr in GUESS_FLAG_START_1:
-                ps_temp = comment.find(startStr, guess_ps, guess_ps + 20)
-                if ps_temp == -1:
+                PSTemp = comment.find(startStr, guessPS, guessPS + 20)
+                if PSTemp == -1:
                     continue
                 else:
-                    if ps_temp < guess_newPs:
-                        found_temp = True
-                        guess_newPs = ps_temp + len(startStr)
-                        guess_flag = 2
-            if found_temp:
-                guess_ps = guess_newPs
-                cutIn = guess_ps
+                    if PSTemp < guessNewPS:
+                        foundTemp = True
+                        guessNewPS = PSTemp + len(startStr)
+                        guessFlag = 2
+            if foundTemp:
+                guessPS = guessNewPS
+                cutIn = guessPS
                 continue
             else:
-                guess_newPs = len(comment)
+                guessNewPS = len(comment)
                 for startStr in GUESS_FLAG_START_2:
-                    ps_temp = comment.find(startStr, guess_ps, guess_ps + 20)
-                    if ps_temp == -1:
+                    PSTemp = comment.find(startStr, guessPS, guessPS + 20)
+                    if PSTemp == -1:
                         continue
                     else:
-                        if ps_temp < guess_newPs:
-                            found_temp_2 = True
-                            guess_newPs = ps_temp + len(startStr)
-                            guess_flag = 2
-            if found_temp_2:
-                guess_ps = guess_newPs
-            cutIn = guess_ps
-            guess_flag = 2
-        elif guess_flag == 2:
-            guess_newPs = len(comment)
+                        if PSTemp < guessNewPS:
+                            foundTemp2 = True
+                            guessNewPS = PSTemp + len(startStr)
+                            # guessFlag = 2
+            if foundTemp2:
+                guessPS = guessNewPS
+            cutIn = guessPS
+            guessFlag = 2
+        elif guessFlag == 2:
+            guessNewPS = len(comment)
             for endStr in GUESS_FLAG_END:
-                ps_temp = comment.find(endStr, guess_ps)
-                if ps_temp == -1:
+                PSTemp = comment.find(endStr, guessPS)
+                if PSTemp == -1:
                     continue
                 else:
-                    if ps_temp < guess_newPs:
-                        guess_newPs = ps_temp
-            guess_ps = guess_newPs
-            guess_flag = 3
-            cutOut = guess_ps
-        elif guess_flag == 3:
-            found_cut_temp = False
+                    if PSTemp < guessNewPS:
+                        guessNewPS = PSTemp
+            guessPS = guessNewPS
+            guessFlag = 3
+            cutOut = guessPS
+        elif guessFlag == 3:
+            foundCutTemp = False
             for divideStr in GUESS_FLAG_DIVIDE:
                 if comment.find(divideStr, cutIn, cutOut) != -1:
-                    found_cut_temp = True
+                    foundCutTemp = True
                     for wd in comment[cutIn:cutOut].split(divideStr):
-                        guess_wd.append(wd.strip())
+                        guessWD.append(wd.strip())
                     break
-            if not found_cut_temp:
-                guess_wd.append(comment[cutIn:cutOut].strip())
-            guess_flag = 0
+            if not foundCutTemp:
+                guessWD.append(comment[cutIn:cutOut].strip())
+            guessFlag = 0
         else:
-            guess_flag = 0
-    return guess_wd
+            guessFlag = 0
+    return guessWD
 
 
 def fileNameGuess(fileName):
@@ -167,26 +179,26 @@ def getPWFromFolder(file):
             elif os.path.isdir(os.path.join(file, oneFile)):
                 fileNameGuess(oneFile)
     else:
-        folder, fileName = os.path.split(file)
+        parentFolder, fileName = os.path.split(file)
         if "." in fileName:
             fileNamePart = fileName[:fileName.rindex('.')]
         else:
-            fileNamePart=fileName
-        folderName = os.path.split(folder)[1]
+            fileNamePart = fileName
+        folderName = os.path.split(parentFolder)[1]
         fileNameGuess(fileNamePart)
         fileNameGuess(folderName)
-        file_list = os.listdir(folder)
+        file_list = os.listdir(parentFolder)
         for oneFile in file_list:
             if oneFile.endswith('.txt'):
                 oneFileName = oneFile[:-4]
                 fileNameGuess(oneFileName)
-            elif os.path.isdir(os.path.join(folder, oneFile)):
+            elif os.path.isdir(os.path.join(parentFolder, oneFile)):
                 fileNameGuess(oneFile)
 
 
-def isCompressedFile(file):
+def isCompressedFile(file, multiUnrar=False):
     if "." in file:
-        fileExtension = file[file.rindex('.')+1:].lower()
+        fileExtension = file[file.rindex('.') + 1:].lower()
         for rar in RAR_FILE:
             if fileExtension == rar:
                 return True
@@ -195,7 +207,7 @@ def isCompressedFile(file):
         for media in NOT_RAR_FILE:
             if fileExtension == media:
                 return False
-    return not SAVE_MODE
+    return (not SAVE_MODE) or multiUnrar
 
 
 def fileRename(file, n):
@@ -208,11 +220,10 @@ def fileRename(file, n):
 
 
 def winRarDo(folder, file, wd):
-    # extractStr = " x -y -\"p" + wd + "\" \"" + folder + "\\" + file + "\" \"" + folder + "\\\""
-    # extM = subprocess.call("@\""+LOC_WINRAR+PROGRAM_RAR+"\""+extractStr,shell=True)
-    extM = subprocess.call([os.path.join(LOC_WINRAR,PROGRAM_RAR), 'x', '-y', '-p'+wd, os.path.join(folder, file), folder], shell=True)
+    extM = subprocess.call(
+        [os.path.join(LOC_WINRAR, PROGRAM_RAR), 'x', '-y', '-p' + wd, os.path.join(folder, file), folder])
     # print("winrar", extM)
-    if extM == 1:    # not rar file
+    if extM == 1:  # not rar file
         return 2
     elif extM == 11:  # wrong password
         return 1
@@ -225,12 +236,11 @@ def winRarDo(folder, file, wd):
 
 
 def z7Do(folder, file, wd):
-    # extractStr = " x -y -\"p" + wd + "\" \"" + folder + "\\" + file + "\" -o\"" + folder + "\\\""
-    # extM = subprocess.call("@\""+LOC_7Z+PROGRAM_7Z+"\""+extractStr,shell=True)
-    extM = subprocess.call([os.path.join(LOC_7Z, PROGRAM_7Z), 'x', '-y', '-p' + wd, os.path.join(folder, file), '-o' + folder], shell=True)
-
+    extM = subprocess.call(
+        [os.path.join(LOC_7Z, PROGRAM_7Z), 'x', '-y', '-p' + wd, os.path.join(folder, file), '-o' + folder],
+        shell=False)
     # print("7z", extM)
-    if extM !=0:  # error
+    if extM != 0:  # error
         if extM == 2:  # fatal error
             return 1
         else:
@@ -239,45 +249,41 @@ def z7Do(folder, file, wd):
         return 0
 
 
-def unrarFile(folder, file):
+def unrarFun3(folder, file, multiPart=False):
     successThisFile = False
     if not folder:
         folder, file = os.path.split(file)
     originalName = file
-    if RENAME_UNRAR:
+    if RENAME_UNRAR and not multiPart:  # 分卷解压不重命名
         if '.' in file:
             fileExtension = file[file.rindex('.'):]
         else:
             fileExtension = ''
-        dt_ms = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
+        dt_ms = 'RAR' + datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
         while os.path.exists(os.path.join(folder, dt_ms + fileExtension)):
             dt_ms = dt_ms + '(1)'
         os.rename(os.path.join(folder, file), os.path.join(folder, dt_ms + fileExtension))
         file = dt_ms + fileExtension
 
-    if ENABLE_RAR and file.endswith(".rar"):
+    if ENABLE_RAR and (file.endswith(".rar") or file.endswith(".zip")):
         winRarReturn = winRarDo(folder, file, PASSWD[0])
-        #print(winRarReturn)
         if winRarReturn == 0:
-            #successThisFile = True
-            return True
+            successThisFile = True
         elif winRarReturn == 2:
             pass
         else:
             getCommentStr = " l -p0 -z" + " \"" + folder + "\\" + file + "\""
-            commentNumber = subprocess.call("@\""+LOC_WINRAR+PROGRAM_RAR+"\""+getCommentStr,shell=True)
-            #commentNumber = 1
+            commentNumber = subprocess.call("@\"" + LOC_WINRAR + PROGRAM_RAR + "\"" + getCommentStr)
             if commentNumber == 0:
-                commentM = subprocess.getstatusoutput("@\""+LOC_WINRAR+PROGRAM_RAR+"\""+getCommentStr)
+                commentM = subprocess.getstatusoutput("@\"" + LOC_WINRAR + PROGRAM_RAR + "\"" + getCommentStr)
                 if commentM[0] == 0:
-                    fileNameEncrypted = False
                     try:
-                        comment = commentM[1][(commentM[1].index("\n\n")+2):commentM[1].index(folder)]
+                        comment = commentM[1][(commentM[1].index("\n\n") + 2):commentM[1].index(folder)]
                         comment = comment[0:comment.rindex("\n\n")]
                     except:
                         pass
                     else:
-                        #print(comment)
+                        # print(comment)
                         if comment:
                             wdArray = guessWDComment(comment)
                             print("Possible passwords:", wdArray)
@@ -294,19 +300,19 @@ def unrarFile(folder, file):
                                 else:
                                     break
             if not successThisFile:
-                for index in range(1,len(PASSWD)):
+                for index in range(1, len(PASSWD)):
                     winRarReturn = winRarDo(folder, file, PASSWD[index])
                     if winRarReturn == 1:
                         continue
                     elif winRarReturn == 0:
                         successThisFile = True
-                        PASSWD[0],PASSWD[index]=PASSWD[index],PASSWD[0]
+                        PASSWD[0], PASSWD[index] = PASSWD[index], PASSWD[0]
                         break
                     elif winRarReturn == 2:
                         break
                     else:
                         break
-            
+
     elif not successThisFile:
         if ENABLE_7Z:
             for index in range(len(PASSWD)):
@@ -314,32 +320,36 @@ def unrarFile(folder, file):
                 if z7Return == 1:
                     continue
                 elif z7Return == 3:
-                    logError("Broken file: "+file)
-                    return successThisFile
+                    logError("Broken file: " + file)
+                    break
                 else:
                     successThisFile = True
-                    PASSWD[0],PASSWD[index]=PASSWD[index],PASSWD[0]
+                    PASSWD[0], PASSWD[index] = PASSWD[index], PASSWD[0]
                     break
-                     
+
     if not successThisFile:
-        if RENAME_UNRAR:
+        if RENAME_UNRAR and not multiPart:
             os.rename(os.path.join(folder, file), os.path.join(folder, originalName))
         logError("No passsword for: " + originalName)
     else:
         if DELETEIT:
-            os.remove(os.path.join(folder, file))
-            multiUnrar()
-        elif RENAME_UNRAR:
+            if multiPart:
+                for multiFile in multiPartList:
+                    os.remove(os.path.join(folder, multiFile))
+            else:
+                os.remove(os.path.join(folder, file))
+            multiLevelUnrar()
+        elif RENAME_UNRAR and not multiPart:
             moveTemp = os.path.join(folder, originalName)
             originalPath = moveTemp
             i = 0
             while os.path.exists(moveTemp):
-                i = i + 1
+                i += 1
                 moveTemp = fileRename(originalPath, i)
             os.rename(os.path.join(folder, file), moveTemp)
 
 
-def multiUnrar():
+def multiLevelUnrar():
     global workSpace, lastFileName, lastFileSize, lastSpaceFiles, newSpaceFiles
     if MULTI_UNRAR:
         newSpaceFiles = os.listdir(workSpace)
@@ -347,9 +357,9 @@ def multiUnrar():
             if os.path.isfile(os.path.join(workSpace, file)):
                 if file not in lastSpaceFiles or (file == lastFileName and DELETEIT):
                     newFileSize = os.path.getsize(os.path.join(workSpace, file))
-                    if newFileSize*1.3 > lastFileSize:
-                        unrarFile(workSpace, file)
-                        break
+                    if newFileSize * 1.3 > lastFileSize:
+                        if unrarFun2(os.path.join(workSpace, file), True):
+                            break
             else:
                 if file not in lastSpaceFiles:
                     newFileList = os.listdir(os.path.join(workSpace, file))
@@ -359,64 +369,123 @@ def multiUnrar():
                             if isCompressedFile(filePath):
                                 newFileSize = os.path.getsize(filePath)
                                 if newFileSize * 1.3 > lastFileSize:
-                                    unrarFile('', filePath)
-                                    break
+                                    if unrarFun2(filePath, True):
+                                        break
 
 
-def unrar(folder):
-    global workSpace, lastFileName, lastFileSize, lastSpaceFiles
-    if os.path.isdir(folder):
-        print(folder)
-        workSpace = folder
-        file_list = os.listdir(folder)
-        lastSpaceFiles = file_list
-        for file in file_list:
-            if os.path.isdir(os.path.join(folder, file)):
-                pass
-            else:
-                if isCompressedFile(file):
-                    lastFileName = file
-                    lastFileSize = os.path.getsize(os.path.join(folder, file))
-                    unrarFile(folder, file)
-                    lastSpaceFiles = os.listdir(folder)
+def getMultiPartInFolder(folder, startName, ext, rarType):
+    # rarType: 0:like abc.7z.001
+    #          1:like abc.part1.rar
+    fileList = []
+    if rarType == 1:
+        for file in os.listdir(folder):
+            if file.startswith(startName + '.'):
+                if file[len(startName) + 1:].startswith('part'):
+                    if file.endswith(ext):
+                        fileList.append(file)
     else:
-        if isCompressedFile(folder):
+        for file in os.listdir(folder):
+            if file.startswith(startName + '.'):
+                if file[len(startName) + 1:].startswith(ext + '.'):
+                    fileList.append(file)
+    return fileList
+
+
+def getMultiPart(filePath):
+    name = os.path.split(filePath)[1]
+    parentFolder = os.path.split(filePath)[0]
+    if '.' in name:
+        nameSplit = name.split('.')
+        if len(nameSplit) <= 2:
+            return []
+        elif len(nameSplit) == 3:
+            startName = nameSplit[0]
+            endExt = ''
+            middleExt = ''
+            for ext in NOT_RAR_FILE:
+                if nameSplit[2] == ext:
+                    return []
+            for rar in RAR_FILE:
+                if nameSplit[2] == rar:
+                    endExt = rar
+                    break
+                elif nameSplit[1] == rar:
+                    middleExt = rar
+                    break
+            if endExt:
+                rarType = 1
+                return getMultiPartInFolder(parentFolder, startName, endExt, rarType)
+            elif middleExt:
+                rarType = 0
+                return getMultiPartInFolder(parentFolder, startName, middleExt, rarType)
+    return []
+
+
+def unrarFun2(filePath, multiUnrar=False):
+    global lastFileName, lastFileSize, multiPartList
+    multiPartList = getMultiPart(filePath)
+    if multiPartList:
+        if not multiPartList[0] in multiPartExtracted:
+            multiPartExtracted.extend(multiPartList)
+            for multiFile in multiPartList:
+                if multiFile.endswith('.001') or '.part1.' in multiFile or '.part01.' in multiFile or '.part001.' in multiFile:
+                    lastFileName = multiFile
+                    lastFileSize = os.path.getsize(os.path.join(workSpace, multiFile)) * len(multiPartList)
+                    unrarFun3(workSpace, multiFile, True)
+                    return True
+    elif isCompressedFile(filePath, multiUnrar):
+        lastFileSize = os.path.getsize(filePath)
+        unrarFun3('', filePath)
+        return True
+    return False
+
+
+def unrarFun1(folder):
+    global workSpace, lastSpaceFiles
+    if os.path.exists(folder):
+        if os.path.isdir(folder):
+            print(folder)
+            workSpace = folder
+            file_list = os.listdir(folder)
+            lastSpaceFiles = file_list
+            for file in file_list:
+                filePath = os.path.join(folder, file)
+                if os.path.exists(filePath):
+                    if os.path.isfile(filePath):
+                        unrarFun2(filePath)
+        else:
             workSpace = os.path.split(folder)[0]
-            lastFileName = os.path.split(folder)[1]
-            lastFileSize = os.path.getsize(folder)
             lastSpaceFiles = os.listdir(workSpace)
-            unrarFile("", folder)
+            unrarFun2(folder)
 
-
-                  
 
 if __name__ == '__main__':
     if len(sys.argv) <= 1:
         sys.exit(1)
-    testRar = os.popen("\""+LOC_WINRAR+PROGRAM_RAR+"\"").read()    
-    if not testRar:
-       for loc in LOC_S_WINRAR:
-           testRar = os.popen("\""+loc+PROGRAM_RAR+"\"").read()
-           if testRar:
-               LOC_WINRAR = loc
-               ENABLE_RAR = True
-               break
+    testWinRAR = os.popen("\"" + LOC_WINRAR + PROGRAM_RAR + "\"").read()
+    if not testWinRAR:
+        for loc in LOC_S_WINRAR:
+            testWinRAR = os.popen("\"" + loc + PROGRAM_RAR + "\"").read()
+            if testWinRAR:
+                LOC_WINRAR = loc
+                ENABLE_RAR = True
+                break
     else:
         ENABLE_RAR = True
 
-    test7z = os.popen("\""+LOC_7Z+PROGRAM_7Z+"\"").read()    
+    test7z = os.popen("\"" + LOC_7Z + PROGRAM_7Z + "\"").read()
     if not test7z:
-       for loc in LOC_S_7Z:
-           test7z = os.popen("\""+loc+PROGRAM_7Z+"\"").read()
-           if test7z:
-               LOC_7Z = loc
-               ENABLE_7Z = True
-               break
+        for loc in LOC_S_7Z:
+            test7z = os.popen("\"" + loc + PROGRAM_7Z + "\"").read()
+            if test7z:
+                LOC_7Z = loc
+                ENABLE_7Z = True
+                break
     else:
         ENABLE_7Z = True
 
     if (not ENABLE_RAR) and (not ENABLE_7Z):
-        print("Cannot find winRAR and 7-zip")
+        print("Cannot find winRAR or 7-zip")
         sys.exit(1)
     if len(sys.argv) > 1:
         while len(PASSWD) < 2:
@@ -430,12 +499,11 @@ if __name__ == '__main__':
         if os.path.isfile(sys.argv[1]):
             SAVE_MODE = False
         # print(PASSWD)
-        # subprocess.call("pause", shell=True)
-        for folder in sys.argv[1:]:
-            #print(folder)
-            unrar(folder)
+        # subprocess.call("pause")
+        for inputFolder in sys.argv[1:]:
+            # print(inputFolder)
+            unrarFun1(inputFolder)
         print("Finish.")
         if ERROR_LIST:
             print(ERROR_LIST)
-            subprocess.call("pause", shell=True)
-        sys.exit(0)
+            subprocess.call("pause")
