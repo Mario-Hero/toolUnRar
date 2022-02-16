@@ -3,21 +3,15 @@
 
 # Created by Mario Chen, 04.04.2021, Shenzhen
 # My Github site: https://github.com/Mario-Hero
-
+import random
 import sys
 import os
 import subprocess
 
-try:
-    import datetime
-except ImportError:
-    os.system('pip install datetime')
-    import datetime
-
 # you can change it >>>>>
 
 PASSWD = ['666', '123456']  # 可能的密码 possible passwords
-DELETEIT = False  # 注意！解压后删除压缩包 DANGER!! If it is True,will delete rar file after extraction
+DELETEIT = True  # 注意！解压后删除压缩包 DANGER!! If it is True,will delete rar file after extraction
 LOC_WINRAR = "C:\\Program Files\\WinRAR\\"  # location of WinRAR
 LOC_7Z = "C:\\Program Files\\7-Zip\\"  # location of 7-Zip
 SAVE_MODE = True  # 如果文件后缀看上去不像压缩文件，就不解压，除非用户拖入的是文件 if the extension name of file doesn't look like a compressed file, then do nothing with it, unless the user drag files into this script.
@@ -38,6 +32,7 @@ RAR_FILE = ["rar", "zip", "7z", "tar", "gz", "xz", "bzip2", "gzip", "wim", "arj"
 NOT_RAR_FILE = ["jpg", "exe", "png", "mkv", "mp4", "mp3", "avi", "mov", "jpeg", "wav", "gif", "mpeg", "webp", "txt",
                 "doc", "docx", "ppt", "pptx", "xls", "xlsx", "html", "wps", "torrent", "swf", "bmp", "crdownload",
                 "xltd", "downloading"]
+VAR_STR = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
 ENABLE_RAR = False  # initial state only
 ENABLE_7Z = False  # initial state only
 
@@ -60,9 +55,17 @@ newSpaceFiles = []
 multiPartList = []
 multiPartExtracted = []
 
+
 def logError(comment):
     global ERROR_LIST
     ERROR_LIST += comment + '\n'
+
+
+def randomName():
+    randomFileName = 'RAR'
+    for i in range(random.randint(8, 15)):
+        randomFileName += random.choice(VAR_STR)
+    return randomFileName
 
 
 def guessWDComment(comment):
@@ -259,13 +262,14 @@ def unrarFun3(folder, file, multiPart=False):
             fileExtension = file[file.rindex('.'):]
         else:
             fileExtension = ''
-        dt_ms = 'RAR' + datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
-        while os.path.exists(os.path.join(folder, dt_ms + fileExtension)):
-            dt_ms = dt_ms + '(1)'
-        os.rename(os.path.join(folder, file), os.path.join(folder, dt_ms + fileExtension))
-        file = dt_ms + fileExtension
+        dt_ms = randomName() + fileExtension
+        # dt_ms = 'RAR' + datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
+        while os.path.exists(os.path.join(folder, dt_ms)):
+            dt_ms = randomName() + fileExtension
+        os.rename(os.path.join(folder, file), os.path.join(folder, dt_ms))
+        file = dt_ms
 
-    if ENABLE_RAR and (file.endswith(".rar") or file.endswith(".zip")):
+    if ENABLE_RAR and file.endswith(".rar"):
         winRarReturn = winRarDo(folder, file, PASSWD[0])
         if winRarReturn == 0:
             successThisFile = True
@@ -505,4 +509,4 @@ if __name__ == '__main__':
         print("Finish.")
         if ERROR_LIST:
             print(ERROR_LIST)
-            os.system("pause")
+            os.system('pause')
