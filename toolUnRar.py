@@ -88,7 +88,15 @@ class myPasswordLib:
                         break
                 self.traverseList = returnList
         else:
-            self.traverseList = self.keyList + self.newList + self.oldList
+            if self.lastPWD:
+                returnList = [self.lastPWD] + self.keyList + self.newList + self.oldList
+                for i in range(len(returnList) - 1):
+                    if returnList[i + 1] == self.lastPWD:
+                        returnList.pop(i + 1)
+                        break
+                self.traverseList = returnList
+            else:
+                self.traverseList = self.keyList + self.newList + self.oldList
 
 
 passwdlib = myPasswordLib()
@@ -196,7 +204,7 @@ def guessWDComment(comment):
             guessFlag = 0
         else:
             guessFlag = 0
-    #return guessWD
+    return guessWD
 
 
 def fileNameGuess(fileName):
@@ -314,7 +322,10 @@ def unrarFun3(folder, file, multiPart=False):
         file = dt_ms
 
     if ENABLE_RAR and file.endswith(".rar"):
-        winRarReturn = winRarDo(folder, file, passwdlib.lastPWD)
+        if passwdlib.lastPWD:
+            winRarReturn = winRarDo(folder, file, passwdlib.lastPWD)
+        else:
+            winRarReturn = winRarDo(folder, file, '666')
         if winRarReturn == 0:
             successThisFile = True
         elif winRarReturn == 2:
@@ -335,6 +346,7 @@ def unrarFun3(folder, file, multiPart=False):
                         if comment:
                             # wdArray = guessWDComment(comment)
                             guessWDComment(comment)
+                            passwdlib.updateLastPWD()
                             #print("Possible passwords:", wdArray)
             if not successThisFile:
                 for wd in passwdlib.traverseList:
