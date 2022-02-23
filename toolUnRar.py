@@ -11,7 +11,7 @@ import subprocess
 # you can change it >>>>>
 
 PASSWD = ['666', '123456']  # 可能的密码 possible passwords
-DELETEIT = True  # 注意！解压后删除压缩包 DANGER!! If it is True,will delete rar file after extraction
+DELETEIT = False # 注意！解压后删除压缩包 DANGER!! If it is True,will delete rar file after extraction
 LOC_WINRAR = "C:\\Program Files\\WinRAR\\"  # location of WinRAR
 LOC_7Z = "C:\\Program Files\\7-Zip\\"  # location of 7-Zip
 SAVE_MODE = True  # 如果文件后缀看上去不像压缩文件，就不解压，除非用户拖入的是文件 if the extension name of file doesn't look like a compressed file, then do nothing with it, unless the user drag files into this script.
