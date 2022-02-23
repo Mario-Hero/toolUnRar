@@ -11,7 +11,7 @@ import subprocess
 # you can change it >>>>>
 
 PASSWD = ['666', '123456']  # 可能的密码 possible passwords
-DELETEIT = False  # 注意！解压后删除压缩包 DANGER!! If it is True,will delete rar file after extraction
+DELETEIT = True  # 注意！解压后删除压缩包 DANGER!! If it is True,will delete rar file after extraction
 LOC_WINRAR = "C:\\Program Files\\WinRAR\\"  # location of WinRAR
 LOC_7Z = "C:\\Program Files\\7-Zip\\"  # location of 7-Zip
 SAVE_MODE = True  # 如果文件后缀看上去不像压缩文件，就不解压，除非用户拖入的是文件 if the extension name of file doesn't look like a compressed file, then do nothing with it, unless the user drag files into this script.
@@ -332,7 +332,9 @@ def unrarFun3(folder, file, multiPart=False):
             pass
         else:
             getCommentStr = " l -p0 -z" + " \"" + folder + "\\" + file + "\""
-            commentNumber = subprocess.call("@\"" + LOC_WINRAR + PROGRAM_RAR + "\"" + getCommentStr)
+            print("\"" + LOC_WINRAR + PROGRAM_RAR + "\"" + getCommentStr)
+            commentNumber = subprocess.call("\"" + LOC_WINRAR + PROGRAM_RAR + "\"" + getCommentStr)
+
             if commentNumber == 0:
                 commentM = subprocess.getstatusoutput("@\"" + LOC_WINRAR + PROGRAM_RAR + "\"" + getCommentStr)
                 if commentM[0] == 0:
@@ -441,13 +443,23 @@ def getMultiPartInFolder(folder, startName, ext, rarType):
 
 
 def getMultiPart(filePath):
-    name = os.path.split(filePath)[1]
-    parentFolder = os.path.split(filePath)[0]
+    parentFolder, name = os.path.split(filePath)
     if '.' in name:
         nameSplit = name.split('.')
         if len(nameSplit) <= 2:
             return []
-        elif len(nameSplit) == 3:
+        elif len(nameSplit) > 3:
+            newSplit = []
+            for i in range(len(nameSplit)):
+                if i == 0:
+                    newSplit.append(nameSplit[0])
+                elif i <= len(nameSplit) - 3:
+                    newSplit[0] += '.' + nameSplit[i]
+                else:
+                    newSplit.append(nameSplit[i])
+            nameSplit = newSplit
+            print(nameSplit)
+        if len(nameSplit) == 3:
             startName = nameSplit[0]
             endExt = ''
             middleExt = ''
@@ -463,9 +475,11 @@ def getMultiPart(filePath):
                     break
             if endExt:
                 rarType = 1
+                #print(endExt)
                 return getMultiPartInFolder(parentFolder, startName, endExt, rarType)
             elif middleExt:
                 rarType = 0
+                #print(middleExt)
                 return getMultiPartInFolder(parentFolder, startName, middleExt, rarType)
     return []
 
