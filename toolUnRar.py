@@ -336,7 +336,7 @@ def unrarFun3(folder, file, multiPart=False):
             commentNumber = subprocess.call("\"" + LOC_WINRAR + PROGRAM_RAR + "\"" + getCommentStr)
 
             if commentNumber == 0:
-                commentM = subprocess.getstatusoutput("@\"" + LOC_WINRAR + PROGRAM_RAR + "\"" + getCommentStr)
+                commentM = subprocess.getstatusoutput("\"" + LOC_WINRAR + PROGRAM_RAR + "\"" + getCommentStr)
                 if commentM[0] == 0:
                     try:
                         comment = commentM[1][(commentM[1].index("\n\n") + 2):commentM[1].index(folder)]
