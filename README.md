@@ -1,6 +1,6 @@
 # toolUnRar
 
-**Last Update: 2022.02.14**
+**Last Update: 2022.03.12**
 
 
 
@@ -12,21 +12,29 @@ A Python script for batch rar extraction with passwords
 
 Just drag the folder or rar files onto the script.
 
-能分析压缩包注释、附近文件的文件名来获取密码
+能分析压缩包注释、附近文件的文件名、文本文档的内容来获取密码
 
-Able to analyze the comments of the compressed package and the file names of nearby files to obtain the password.
+Able to analyze the comments of the compressed package, file names of nearby files and content of text files to obtain the password.
 
 支持解压几乎所有压缩文件格式。
 
 Support almost all formats of compressed file.
 
-可携带 Portable
+支持分卷解压缩。
+
+Support decompressing multi-part compressed files.
+
+可携带 Portable.
 
 
 
 ## 更新 Update
 
-**2022.02.14:** 支持解压形如abc.7z.001和abc.part1.rar的分卷压缩文件（但是不会对分卷进行批量重命名避免解压时文件名重复的问题，我真不信有人分卷解压出来还是一样文件名的分卷的）。Support decompressing multi-part compressed files, such as abc.7z.001 and abc.part1.rar.
+**2022.03.12:**  新增参数DEFAULT_TARGET，直接双击打开脚本时将会对DEFAULT_TARGET进行解压。Add new parameter DEFAULT_TARGET. Double click the script, the DEFAULT_TARGET will be decompressed.
+
+**2022.02.27:** 有这么一种情况，压缩包里没有文件夹，全是图片，解压出来图片会全部散在当前文件夹，非常尴尬。所以针对这种情况设计了算法：如果解压出来的文件过多且不包含任何文件夹，则把这些文件剪切到当前文件夹的以压缩包文件名命名的文件夹中。通过参数COLLECT_FILES设置，默认开启。In such a case, there is no folder in the compressed package, but all pictures. The extracted pictures will be scattered in the current folder, which is very embarrassing... Therefore, an algorithm is designed for this situation: if the extracted files are too many and do not contain any folders, cut these files into the folder named as same as the compressed package file name in the current folder. This function can be set through the parameter COLLECT_FILES, which is enabled by default.
+
+**2022.02.14:** 支持解压形如abc.7z.001，abc.part1.rar，abc.z01的分卷压缩文件（但是不会对分卷进行批量重命名避免解压时文件名重复的问题，我真不信有人分卷解压出来还是一样文件名的分卷的）。Support decompressing multi-part compressed files, such as abc.7z.001, abc.part1.rar and abc.z01.
 
 **2021.11.05:** 支持直接解压双重压缩文件（假如压缩包里又套一个压缩包，就可以继续解压），使用参数 **MULTI_UNRAR** 进行设置。支持解压与压缩包同名的文件。Support direct extraction of double compressed files (if there is another compressed package in this package, the program can continue to extract files), use the parameter **MULTI_UNRAR** to set. Support extracting files with the same name as the compressed package.
 
@@ -70,15 +78,21 @@ The script can obtain the password from the name of the parent folder, the names
 
 ## 参数 Parameters
 
-PASSWD = ["hello","123456"] ：你的密码本，该脚本会从这个数组中不断试验密码来解压缩，直到成功为止。
+DEFAULT_TARGET = '路径：直接双击打开脚本时将会对DEFAULT_TARGET路径进行解压。
 
-PASSWD： your passwords.
+DEFAULT_TARGET = 'Path'：Double click the script, the DEFAULT_TARGET will be decompressed.
 
 <br>
 
-DELETEIT ：一个危险的参数。为真时，该脚本会直接删除成功解压的压缩文件。为假则不会删除。
+PASSWD = ["hello","123456"] ：你的密码本，该脚本会从这个数组中不断试验密码来解压缩，直到成功为止。
 
-DELETEIT：DANGER!! If it is True,will delete compressed file after extraction
+PASSWD = ["hello","123456"] ： your passwords.
+
+<br>
+
+DELETEIT = False：一个危险的参数。为真时，该脚本会直接删除成功解压的压缩文件。为假则不会删除。
+
+DELETEIT = False：DANGER!! If it is True,will delete compressed file after extraction
 
 <br>
 
@@ -96,13 +110,13 @@ LOC_7Z: location of 7-Zip
 
 SAVE_MODE = True：如果该脚本无法通过后缀判断这是不是压缩文件，则不对该文件进行操作。
 
-SAVE_MODE = True：If the script cannot recognize the format of file from it's suffix, then do nothing with the file.
+SAVE_MODE = True：If the script cannot recognize the format of file from it's extention, then do nothing with this file.
 
 <br>
 
 MULTI_UNRAR = DELETEIT and True：为真时支持双重解压，要求DELETEIT也为真。
 
-MULTI_UNRAR = DELETEIT and True：unzip double compressed files if MULTI_UNRAR and DELETEIT is True
+MULTI_UNRAR = DELETEIT and True：Unzip double compressed files if MULTI_UNRAR and DELETEIT is True
 
 ## License
 
