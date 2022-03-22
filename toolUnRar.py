@@ -235,10 +235,9 @@ def fileNameGuess(fileName):
             guessWDComment(fileName)
             return True
     if ' ' in fileName:
-        passwdlib.add(fileName[fileName.rindex(' '):], False)
-        # PASSWD.insert(0, fileName[fileName.rindex(' '):])
+        for fileNamePart in fileName.split(' '):
+            passwdlib.add(fileNamePart, False)
     passwdlib.add(fileName, False)
-    # PASSWD.insert(0, fileName)
     return False
 
 
