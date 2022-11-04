@@ -1,6 +1,6 @@
 # toolUnRar
 
-**Last Update: 2022.03.12**
+**Last Update: 2022.11.04**
 
 
 
@@ -26,9 +26,13 @@ Support decompressing multi-part compressed files.
 
 可携带 Portable.
 
+支持Windows和Linux操作系统。 Support Windows and Linux.
 
+<br>
 
 ## 更新 Update
+
+**2022.11.04:**  支持Linux系统。Support Linux.
 
 **2022.03.12:**  新增参数DEFAULT_TARGET，直接双击打开脚本时将会对DEFAULT_TARGET进行解压。Add new parameter DEFAULT_TARGET. Double click the script, the DEFAULT_TARGET will be decompressed.
 
@@ -48,9 +52,11 @@ As shown in the picture below, 0001 ~ 0007 will be added to the beginning of pas
 
 **2021.05.02:** 新增在压缩包的注释里找密码的功能。Added the ability to find the password in the comments of the archive.
 
+<br>
+
 ## 依赖 Dependency
 
-**Windows**
+**Windows x64:**
 
 Python 3
 
@@ -62,13 +68,38 @@ If you need to extract RAR files, you need to install WinRAR or download all the
 
 If you need to extract 7z or other files which supported by 7-Zip, you need to install 7-Zip or download all the files of this project.
 
+<br>
 
+**Linux x64:**
+
+Python 3
+
+直接打包下载本项目即可。7zzs为Linux下的7z解压程序。如果你的系统是32位或Arm的，可以从[官网](https://sparanoid.com/lab/7z/download.html)下载对应版本替换之。
+
+Download all the files of this project. The 7zzs inside is a 7z decompressor under Linux. If your system is 32-bit or Arm, you can download the corresponding version from [the official site](https://7-zip.org/download.html) to replace it.
+
+<br>
 
 ## 用法 Usage
 
-直接拖入文件夹或压缩文件到Python脚本toolUnRar.py上即可批量解压缩包含密码的压缩文件。如果拖入的是文件夹，则会把该文件夹下的压缩文件解压缩，但不进入下一级目录。通过设置PASSWD来设置字典，通过设置DELETEIT来设置解压后是否删除被成功解压的压缩文件。本脚本会通过文件的后缀识别该文件是否为压缩文件。
+Windows系统下，直接拖入文件夹或压缩文件到Python脚本toolUnRar.py上即可批量解压缩包含密码的压缩文件。如果拖入的是文件夹，则会把该文件夹下的压缩文件解压缩，但不进入下一级目录。通过设置PASSWD来设置字典，通过设置DELETEIT来设置解压后是否删除被成功解压的压缩文件。本脚本会通过文件的后缀识别该文件是否为压缩文件。
 
-Just drag folders or compressed files into the toolUnRar.py python script to decompress the compressed file. If a folder is dragged in, the compressed files under the folder will be decompressed, but will not enter the child folders. Set the dictionary by setting parameter PASSWD and whether to delete the successfully decompressed compressed file after decompression by setting parameter  DELETEIT. This script will identify whether the file is a compressed file through the extention of the file.
+If you are using Windows, just drag folders or compressed files into the toolUnRar.py python script to decompress the compressed file. If a folder is dragged in, the compressed files under the folder will be decompressed, but will not enter the child folders. Set the dictionary by setting parameter PASSWD and whether to delete the successfully decompressed compressed file after decompression by setting parameter  DELETEIT. This script will identify whether the file is a compressed file through the extention of the file.
+
+<br>
+
+Linux系统下, 先给文件添加执行权限。In Linux system, add execution permission to the file first.
+
+```bash
+chmod +x ./toolUnRar.py
+chmod +x ./7zzs
+```
+
+Linux下无法拖入文件到脚本上执行，需要把文件路径作为参数在命令行下运行。例如: `./toolUnRar.py ~/myfile.rar`
+
+The file cannot be dragged in. You need to copy the file path as a parameter to the command line and run it. For example: `./toolUnRar.py ~/myfile.rar`
+
+<br>
 
 ## 支持的密码表示形式 Supported password formats
 
@@ -76,11 +107,13 @@ Just drag folders or compressed files into the toolUnRar.py python script to dec
 
 The script can obtain the password from the name of the parent folder, the names of all folders and txt files under the parent folder. It can identify format like these: password: xxx, password xxx, 密码：xxx，密码:xxx, 密码 xxx.  If the two keywords password and 密码 are not included, the script will separate the text by spaces and temporarily add them to the password list.
 
+<br>
+
 ## 参数 Parameters
 
 DEFAULT_TARGET = '路径：直接双击打开脚本时将会对DEFAULT_TARGET路径进行解压。
 
-DEFAULT_TARGET = 'Path'：Double click the script, the DEFAULT_TARGET will be decompressed.
+DEFAULT_TARGET = 'Path'：If you just double click the script, the DEFAULT_TARGET will be decompressed.
 
 <br>
 
@@ -93,18 +126,6 @@ PASSWD = ["hello","123456"] ： your passwords.
 DELETEIT = False：一个危险的参数。为真时，该脚本会直接删除成功解压的压缩文件。为假则不会删除。
 
 DELETEIT = False：DANGER!! If it is True,will delete compressed file after extraction
-
-<br>
-
-LOC_WINRAR = "C:\\Program Files\\WinRAR\\" 你的WinRAR安装位置。就算这个变量的设置的不对，该程序也会在可能的位置来寻找对应的程序。
-
-LOC_WINRAR: location of WinRAR. Even the location doesn't set correctly. This script will try to find it in possible locations.
-
-<br>
-
-LOC_7Z：7-Zip的安装位置。
-
-LOC_7Z: location of 7-Zip
 
 <br>
 
