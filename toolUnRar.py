@@ -704,7 +704,7 @@ if __name__ == '__main__':
             if getPWFromFolder(sys.argv[1]):
                 passwdlib.updateLastPWD()
         for inputFolder in sys.argv[1:]:
-            if os.path.exists(sys.argv[1]):
+            if os.path.exists(inputFolder):
                 if checkEveryFilePassWD:
                     if getPWFromFolder(inputFolder):
                         passwdlib.updateLastPWD()
