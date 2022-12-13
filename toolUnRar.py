@@ -44,7 +44,7 @@ RAR_FILE = {"rar", "zip", "7z", "tar", "gz", "xz", "bzip2", "gzip", "wim", "arj"
             "xar", "z"}
 NOT_RAR_FILE = {"jpg", "exe", "png", "mkv", "mp4", "mp3", "avi", "mov", "jpeg", "wav", "gif", "mpeg", "webp", "txt",
                 "doc", "docx", "ppt", "pptx", "xls", "xlsx", "html", "wps", "torrent", "swf", "bmp", "crdownload",
-                "xltd", "downloading", "py"}
+                "xltd", "downloading", "py", "max"}
 VAR_STR = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
 PAUSE_COMMAND = "pause"
 PAUSE_COMMAND_LINUX = "read -n1 -p \"Press any key to continue...\""
