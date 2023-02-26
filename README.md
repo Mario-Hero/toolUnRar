@@ -30,7 +30,15 @@ Support decompressing multi-part compressed files.
 
 <br>
 
-## 更新 Update
+## 用途 Where to use it
+
+从论坛下载的压缩包，其密码往往是约定好的那几个密码，所以可以把常用的密码输入这个Python脚本，就可以解压这些文件了。这些压缩包有时是双重压缩，该脚本也支持解压这种文件。假如密码不是约定的密码，你可以把密码作为文件夹的名称，把压缩包保存在该文件夹下，该Python脚本也能识别这种存储密码的形式。
+
+The passwords of compressed packages downloaded from the forum are usually the same, so you can input the commonly used passwords into the Python script to extract those files. These files are sometimes multi-compressed, the script also supports decompressing them. If the passwords are not the common passwords, you can rename the folder to the password and save the compressed package under the folder. The Python script can also recognize this form of storing the password.
+
+<br>
+
+## 更新 Update Log
 
 **2022.11.04:**  支持Linux系统。Support Linux.
 
