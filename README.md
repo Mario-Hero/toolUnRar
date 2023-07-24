@@ -8,9 +8,9 @@
 
 A Python script for batch rar extraction with passwords
 
-直接拖入文件夹或压缩文件到脚本上即可
+直接拖入文件夹或压缩文件到脚本（的快捷方式上）上即可
 
-Just drag the folder or rar files onto the script.
+Just drag the folder or rar files onto the script(or its shortcut).
 
 能分析压缩包注释、附近文件的文件名、文本文档的内容来获取密码
 
@@ -90,9 +90,9 @@ Download all the files of this project. The 7zzs inside is a 7z decompressor und
 
 ## 用法 Usage
 
-Windows系统下，直接拖入文件夹或压缩文件到Python脚本toolUnRar.py上即可批量解压缩包含密码的压缩文件。如果拖入的是文件夹，则会把该文件夹下的压缩文件解压缩，但不进入下一级目录。通过设置PASSWD来设置字典，通过设置DELETEIT来设置解压后是否删除被成功解压的压缩文件。本脚本会通过文件的后缀识别该文件是否为压缩文件。
+Windows系统下，直接拖入文件夹或压缩文件到Python脚本toolUnRar.py上（或者脚本的快捷方式上）即可批量解压缩包含密码的压缩文件。如果拖入的是文件夹，则会把该文件夹下的压缩文件解压缩，但不进入下一级目录。通过设置PASSWD来设置字典，通过设置DELETEIT来设置解压后是否删除被成功解压的压缩文件。本脚本会通过文件的后缀识别该文件是否为压缩文件。
 
-If you are using Windows, just drag folders or compressed files into the toolUnRar.py python script to decompress the compressed file. If a folder is dragged in, the compressed files under the folder will be decompressed, but will not enter the child folders. Set the dictionary by setting parameter PASSWD and whether to delete the successfully decompressed compressed file after decompression by setting parameter  DELETEIT. This script will identify whether the file is a compressed file through the extention of the file.
+If you are using Windows, just drag folders or compressed files into the toolUnRar.py python script (or its shortcut) to decompress the compressed file. If a folder is dragged in, the compressed files under the folder will be decompressed, but will not enter the child folders. Set the dictionary by setting parameter PASSWD and whether to delete the successfully decompressed compressed file after decompression by setting parameter  DELETEIT. This script will identify whether the file is a compressed file through the extention of the file.
 
 <br>
 
