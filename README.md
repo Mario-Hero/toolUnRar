@@ -82,11 +82,11 @@ If you need to extract 7z or other files which supported by 7-Zip, you need to i
 
 <br>
 
-**Linux x64:**
+**其他系统 Other OS:**
 
 Python 3
 
-直接打包下载本项目即可。7zzs为Linux下的7z解压程序。如果你的系统是32位或Arm的，可以从[官网](https://sparanoid.com/lab/7z/download.html)下载对应版本替换之。
+直接打包下载本项目即可。7zzs为Linux下的7z解压程序。7zz为Mac下的7z解压程序。如果你的系统是32位或Arm的，可以从[官网](https://sparanoid.com/lab/7z/download.html)下载对应版本替换之。
 
 Download all the files of this project. The 7zzs inside is a 7z decompressor under Linux. If your system is 32-bit or Arm, you can download the corresponding version from [the official site](https://7-zip.org/download.html) to replace it.
 
