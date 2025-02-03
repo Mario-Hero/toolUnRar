@@ -29,12 +29,15 @@ SAVE_MODE = True
 # unless the user only drag files into this script.
 MULTI_UNRAR = DELETEIT and True  # 解压双重压缩文件 unzip double compressed files
 COLLECT_FILES = True  # 如果解压出的文件非常多且都在当前文件夹下，就会把它们移动到当前文件夹下的一个新的文件夹里
+TRAVERSE_ALL_FOLDERS = False # 为真时，遍历所有子文件夹并解压缩。但是不在子文件夹里找密码。  
+# If it is True, it will traverse all folders and decompress. But it will not search passwords in sub folders.
 # <<<<< 用户配置 you can change it
 
 
 PROGRAM_RAR = "UnRAR.exe"  # the program we use on Windows
 PROGRAM_7Z = "7z.exe"  # the program we use on Windows
 PROGRAM_7Z_LINUX = "7zzs"  # the program we use on Linux
+PROGRAM_7Z_MAC = "7zz"  # the program we use on Mac
 LOC_S_WINRAR = ["C:\\Program Files\\WinRAR\\", "C:\\Program Files (x86)\\WinRAR\\", "./",
                 ""]  # some possible locations of WinRAR
 LOC_S_7Z = ["C:\\Program Files\\7-Zip\\", "C:\\Program Files (x86)\\7-Zip\\", "./",
@@ -645,11 +648,8 @@ def unrarFun1(folder):
                 if os.path.exists(filePath):
                     if os.path.isfile(filePath):
                         unrarFun2(filePath)
-                    else:
-                        pass
-                        # unrarFun1(filePath)
-                        # 如果需要遍历所有文件夹解压缩，请关闭上面的一行注释。
-                        # If you need to traverse all folders and decompress, please uncomment the line above.
+                    elif TRAVERSE_ALL_FOLDERS:
+                        unrarFun1(filePath)
 
         else:
             workSpace = os.path.split(folder)[0]
@@ -685,11 +685,10 @@ if __name__ == '__main__':
         if (not ENABLE_RAR) and (not ENABLE_7Z):
             print("Cannot find winRAR or 7-zip")
             sys.exit(1)
-    else:
+    else: # Linux or Mac
         pause_command = PAUSE_COMMAND_LINUX
-        LOC_7Z = os.path.join(
-            os.path.split(sys.argv[0])[0])
-        PROGRAM_7Z = PROGRAM_7Z_LINUX
+        LOC_7Z = os.getcwd()
+        PROGRAM_7Z = PROGRAM_7Z_LINUX if platform.system() == 'Linux' else PROGRAM_7Z_MAC  # 'Darwin' is Mac
         test7z = bool(os.popen(os.path.join(LOC_7Z, PROGRAM_7Z)).read())  # whether 7z exists
         ENABLE_7Z = test7z
         if not test7z:
