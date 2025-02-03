@@ -1,6 +1,6 @@
 # toolUnRar
 
-**Last Update: 2022.11.04**
+**Last Update: 2025.02.03**
 
 
 
@@ -28,6 +28,8 @@ Support decompressing multi-part compressed files.
 
 支持Windows和Linux操作系统。 Support Windows and Linux.
 
+在Mac上没有测试过，理论上可以。 Support Mac theoretically?
+
 <br>
 
 ## 用途 Where to use it
@@ -39,6 +41,8 @@ The passwords of compressed packages downloaded from the forum are usually the s
 <br>
 
 ## 更新 Update Log
+
+**2025.02.03:**  新增参数 TRAVERSE_ALL_FOLDERS，为真时，遍历所有文件夹并解压缩。Add new parameter TRAVERSE_ALL_FOLDERS. If it is True, it will traverse all folders and decompress.
 
 **2022.11.04:**  支持Linux系统。Support Linux.
 
@@ -118,6 +122,11 @@ The script can obtain the password from the name of the parent folder, the names
 <br>
 
 ## 参数 Parameters
+
+TRAVERSE_ALL_FOLDERS = False: 为真时，遍历所有文件夹并解压缩。
+TRAVERSE_ALL_FOLDERS = False: If it is True, it will traverse all folders and decompress.
+
+<br>
 
 DEFAULT_TARGET = '路径：直接双击打开脚本时将会对DEFAULT_TARGET路径进行解压。
 
