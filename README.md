@@ -124,6 +124,7 @@ The script can obtain the password from the name of the parent folder, the names
 ## 参数 Parameters
 
 TRAVERSE_ALL_FOLDERS = False: 为真时，遍历所有文件夹并解压缩。
+
 TRAVERSE_ALL_FOLDERS = False: If it is True, it will traverse all folders and decompress.
 
 <br>
