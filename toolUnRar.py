@@ -2,7 +2,7 @@
 # _*_ coding: UTF-8 _*_
 
 # Created by Mario Chen, 04.04.2021, Shenzhen
-# My Github site: https://github.com/Mario-Hero
+# My GitHub site: https://github.com/Mario-Hero
 import random
 import shutil
 import sys
@@ -10,30 +10,31 @@ import os
 import subprocess
 import platform
 
+chardetEnable = False
 try:
     import chardet
     chardetEnable = True
 except ImportError:
     print('Please install chardet')
-    chardetEnable = False
 
-# you can change it >>>>>
-DEFAULT_TARGET = ''
-PASSWD = ['123456', 'hello']  # 可能的密码 possible passwords
-DELETEIT = False  # 注意！解压后删除压缩包 DANGER!! If it is True,will delete rar file after extraction
+# you can change it 用户配置 >>>>>
+DEFAULT_TARGET = '' # 直接执行该文件的默认的解压路径 The default decompression path when execute directly
+PASSWD = ['123456', 'hello']  # 可能的密码，填写在这里 possible passwords
+DELETEIT = False  # 注意！设为真后，解压后将删除压缩包 DANGER!! If it is True,will delete rar file after extraction
 LOC_WINRAR = "C:\\Program Files\\WinRAR\\"  # location of WinRAR
 LOC_7Z = "C:\\Program Files\\7-Zip\\"  # location of 7-Zip
-# 如果文件后缀看上去不像压缩文件，就不解压，除非用户拖入的是文件 if the extension name of file doesn't look like a compressed file, then do nothing
-# with it, unless the user drag files into this script.
+# 如果文件后缀看上去不像压缩文件，就不解压，除非用户拖入的是文件
+# if the extension name of file doesn't look like a compressed file, then do nothing with it,
+# unless the user drag files into this script.
 
 SAVE_MODE = True
 MULTI_UNRAR = DELETEIT and True  # 解压双重压缩文件 unzip double compressed files
 COLLECT_FILES = True  # 如果解压出的文件非常多且都在当前文件夹下，就会把它们移动到当前文件夹下的一个新的文件夹里
-# <<<<< you can change it
+# <<<<< 用户配置 you can change it
 
 
-PROGRAM_RAR = "UnRAR.exe"  # the program we use
-PROGRAM_7Z = "7z.exe"  # the program we use
+PROGRAM_RAR = "UnRAR.exe"  # the program we use on Windows
+PROGRAM_7Z = "7z.exe"  # the program we use on Windows
 PROGRAM_7Z_LINUX = "7zzs"  # the program we use on Linux
 LOC_S_WINRAR = ["C:\\Program Files\\WinRAR\\", "C:\\Program Files (x86)\\WinRAR\\", "./",
                 ""]  # some possible locations of WinRAR
@@ -44,9 +45,9 @@ RAR_FILE = {"rar", "zip", "7z", "tar", "gz", "xz", "bzip2", "gzip", "wim", "arj"
             "xar", "z"}
 NOT_RAR_FILE = {"jpg", "exe", "png", "mkv", "mp4", "mp3", "avi", "mov", "jpeg", "wav", "gif", "mpeg", "webp", "txt",
                 "doc", "docx", "ppt", "pptx", "xls", "xlsx", "html", "wps", "torrent", "swf", "bmp", "crdownload",
-                "xltd", "downloading", "py", "max"}
+                "xltd", "downloading", "py"}
 VAR_STR = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
-PAUSE_COMMAND = "pause"
+PAUSE_COMMAND_WINDOWS = "pause"
 PAUSE_COMMAND_LINUX = "read -n1 -p \"Press any key to continue...\""
 ENABLE_RAR = False  # initial state only
 ENABLE_7Z = False  # initial state only
@@ -54,11 +55,11 @@ ENABLE_7Z = False  # initial state only
 RENAME_UNRAR = True  # 防止解压的文件与压缩包重名 In order to prevent that the decompressed file has the same name with current file, we rename the compressed file first
 
 # for guessing >>>
-GUESS_FLAG_INIT = ["密码", "码", "password", "Password"]  # 0
-GUESS_FLAG_START_1 = [":", "："]  # 1
-GUESS_FLAG_START_2 = ["是", "为", "is", "are", " "]  # 1
-GUESS_FLAG_END = ["\n", "   "]  # 2
-GUESS_FLAG_DIVIDE = ["或是", "或", " or "]  # 3
+GUESS_FLAG_INIT = ["密码", "码", "password", "Password"]  # state 0
+GUESS_FLAG_START_1 = [":", "："]  # state 1
+GUESS_FLAG_START_2 = ["是", "为", "is", "are", " "]  # state 1
+GUESS_FLAG_END = ["\n", "   "]  # state 2
+GUESS_FLAG_DIVIDE = ["或是", "或", " or "]  # state 3
 # <<< for guessing
 
 ERROR_LIST = ""
@@ -73,7 +74,7 @@ lastFileStartName = ''
 lastMultiPart = False
 
 
-class myPasswordLib:
+class MyPasswordLib:
     def __init__(self):
         self.keyList = []
         self.newList = []
@@ -134,7 +135,7 @@ class myPasswordLib:
                     self.traverseList = self.keyList + self.oldList + self.newList
 
 
-passwdlib = myPasswordLib()
+passwdlib = MyPasswordLib()
 
 
 def logError(comment):
@@ -151,14 +152,14 @@ def randomName():
 
 def guessWDComment(comment):
     global passwdlib
-    guessFlag = 0
+    state = 0
     guessWD = []
     guessPS = 0
     cutIn = 0
     cutOut = 0
     isKey = False
     while True:
-        if guessFlag == 0:
+        if state == 0:
             isKey = False
             guessNewPS = len(comment)
             guessLen = 0
@@ -174,15 +175,15 @@ def guessWDComment(comment):
                 if not guessWD:
                     cutIn = 0
                     cutOut = len(comment)
-                    guessFlag = 3
+                    state = 3
                     isKey = False
                 else:
                     break
             else:
                 isKey = True
                 guessPS = guessNewPS + guessLen
-                guessFlag = 1
-        elif guessFlag == 1:
+                state = 1
+        elif state == 1:
             foundTemp = False
             foundTemp2 = False
             guessNewPS = len(comment)
@@ -194,7 +195,7 @@ def guessWDComment(comment):
                     if PSTemp < guessNewPS:
                         foundTemp = True
                         guessNewPS = PSTemp + len(startStr)
-                        guessFlag = 2
+                        state = 2
             if foundTemp:
                 guessPS = guessNewPS
                 cutIn = guessPS
@@ -213,8 +214,8 @@ def guessWDComment(comment):
             if foundTemp2:
                 guessPS = guessNewPS
             cutIn = guessPS
-            guessFlag = 2
-        elif guessFlag == 2:
+            state = 2
+        elif state == 2:
             guessNewPS = len(comment)
             for endStr in GUESS_FLAG_END:
                 PSTemp = comment.find(endStr, guessPS)
@@ -224,9 +225,9 @@ def guessWDComment(comment):
                     if PSTemp < guessNewPS:
                         guessNewPS = PSTemp
             guessPS = guessNewPS
-            guessFlag = 3
+            state = 3
             cutOut = guessPS
-        elif guessFlag == 3:
+        elif state == 3:
             foundCutTemp = False
             for divideStr in GUESS_FLAG_DIVIDE:
                 if comment.find(divideStr, cutIn, cutOut) != -1:
@@ -238,9 +239,9 @@ def guessWDComment(comment):
             if not foundCutTemp:
                 passwdlib.add(comment[cutIn:cutOut].strip(), isKey)
                 guessWD.append(comment[cutIn:cutOut].strip())
-            guessFlag = 0
+            state = 0
         else:
-            guessFlag = 0
+            state = 0
     return guessWD
 
 
@@ -314,9 +315,9 @@ def fileRename(file, n):
         return os.path.join(pathName, fileName + '(' + str(n) + ')')
 
 
-def winRarDo(folder, file, wd):
+def winRarDo(folder, file, password):
     extM = subprocess.call(
-        [os.path.join(LOC_WINRAR, PROGRAM_RAR), 'x', '-y', '-p' + wd, os.path.join(folder, file), folder])
+        [os.path.join(LOC_WINRAR, PROGRAM_RAR), 'x', '-y', '-p' + password, os.path.join(folder, file), folder])
     # print("winrar", extM)
     if extM == 1:  # not rar file
         return 2
@@ -330,9 +331,9 @@ def winRarDo(folder, file, wd):
         return 0
 
 
-def z7Do(folder, file, wd):
+def z7Do(folder, file, password):
     extM = subprocess.call(
-        [os.path.join(LOC_7Z, PROGRAM_7Z), 'x', '-y', '-p' + wd,
+        [os.path.join(LOC_7Z, PROGRAM_7Z), 'x', '-y', '-p' + password,
          os.path.join(folder, file), '-o' + folder],
         shell=False)
     # print("7z", extM)
@@ -351,7 +352,7 @@ def unrarFun3(folder, file, multiPart=False):
     if not folder:
         folder, file = os.path.split(file)
     originalName = file
-    if RENAME_UNRAR and not multiPart:  # 分卷解压不重命名
+    if RENAME_UNRAR and not multiPart:  # 分卷解压不重命名 Multipart file decompression without renaming
         if '.' in file:
             fileExtension = file[file.rindex('.'):]
         else:
@@ -598,7 +599,7 @@ def getMultiPart(filePath):
                 rarType = 0
                 # print(middleExt)
                 return getMultiPartInFolder(parentFolder, startName, middleExt, rarType)
-    return []
+    return []  # doesn't find multipart files
 
 
 def isMultiFile(multiFile):
@@ -645,6 +646,12 @@ def unrarFun1(folder):
                 if os.path.exists(filePath):
                     if os.path.isfile(filePath):
                         unrarFun2(filePath)
+                    else:
+                        pass
+                        # unrarFun2(filePath)
+                        # 如果需要遍历所有文件夹解压缩，请关闭上面的一行注释。
+                        # If you need to traverse all folders and decompress, please uncomment the line above.
+
         else:
             workSpace = os.path.split(folder)[0]
             lastSpaceFiles = os.listdir(workSpace)
@@ -655,7 +662,9 @@ if __name__ == '__main__':
     if len(sys.argv) <= 1 and not DEFAULT_TARGET:
         sys.exit(1)
     if platform.system() == 'Windows':
-        testWinRAR = os.popen(os.path.join(LOC_WINRAR, PROGRAM_RAR)).read()
+        pause_command = PAUSE_COMMAND_WINDOWS
+        testWinRAR = bool(os.popen(os.path.join(LOC_WINRAR, PROGRAM_RAR)).read())  # whether winrar exists
+        ENABLE_RAR = testWinRAR
         if not testWinRAR:
             for loc in LOC_S_WINRAR:
                 testWinRAR = os.popen(os.path.join(loc, PROGRAM_RAR)).read()
@@ -663,9 +672,9 @@ if __name__ == '__main__':
                     LOC_WINRAR = loc
                     ENABLE_RAR = True
                     break
-        else:
-            ENABLE_RAR = True
-        test7z = os.popen(os.path.join(LOC_7Z, PROGRAM_7Z)).read()
+
+        test7z = bool(os.popen(os.path.join(LOC_7Z, PROGRAM_7Z)).read())  # whether 7z exists
+        ENABLE_7Z = test7z
         if not test7z:
             for loc in LOC_S_7Z:
                 test7z = os.popen(os.path.join(loc, PROGRAM_7Z)).read()
@@ -673,23 +682,20 @@ if __name__ == '__main__':
                     LOC_7Z = loc
                     ENABLE_7Z = True
                     break
-        else:
-            ENABLE_7Z = True
 
         if (not ENABLE_RAR) and (not ENABLE_7Z):
             print("Cannot find winRAR or 7-zip")
             sys.exit(1)
-    elif platform.system() == 'Linux':
-        PAUSE_COMMAND = PAUSE_COMMAND_LINUX
+    else:
+        pause_command = PAUSE_COMMAND_LINUX
         LOC_7Z = os.path.join(
             os.path.split(sys.argv[0])[0])
         PROGRAM_7Z = PROGRAM_7Z_LINUX
-        test7z = os.popen(os.path.join(LOC_7Z, PROGRAM_7Z)).read()
+        test7z = bool(os.popen(os.path.join(LOC_7Z, PROGRAM_7Z)).read())  # whether 7z exists
+        ENABLE_7Z = test7z
         if not test7z:
             print("Cannot find 7-zip")
             sys.exit(1)
-        else:
-            ENABLE_7Z = True
 
     while len(passwdlib.oldList) < 2:
         passwdlib.oldList.append("0")
@@ -704,17 +710,17 @@ if __name__ == '__main__':
             if getPWFromFolder(sys.argv[1]):
                 passwdlib.updateLastPWD()
         for inputFolder in sys.argv[1:]:
-            if os.path.exists(inputFolder):
-                if checkEveryFilePassWD:
-                    if getPWFromFolder(inputFolder):
-                        passwdlib.updateLastPWD()
-                unrarFun1(inputFolder)
-            else:
+            if not os.path.exists(inputFolder):
                 print(inputFolder + " not exists.")
+                continue
+            if checkEveryFilePassWD and getPWFromFolder(inputFolder):
+                passwdlib.updateLastPWD()
+            unrarFun1(inputFolder)
+
         print("Finish.")
         if ERROR_LIST:
             print(ERROR_LIST)
-            os.system(PAUSE_COMMAND)
+            os.system(pause_command)
     elif DEFAULT_TARGET:
         getPWFromFolder(DEFAULT_TARGET)
         if os.path.isfile(DEFAULT_TARGET):
@@ -725,4 +731,4 @@ if __name__ == '__main__':
         print("Finish.")
         if ERROR_LIST:
             print(ERROR_LIST)
-            os.system(PAUSE_COMMAND)
+            os.system(pause_command)
