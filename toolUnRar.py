@@ -647,7 +647,7 @@ def unrarFun1(folder):
                         unrarFun2(filePath)
                     else:
                         pass
-                        # unrarFun2(filePath)
+                        # unrarFun1(filePath)
                         # 如果需要遍历所有文件夹解压缩，请关闭上面的一行注释。
                         # If you need to traverse all folders and decompress, please uncomment the line above.
 
