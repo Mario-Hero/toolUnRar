@@ -23,11 +23,10 @@ PASSWD = ['123456', 'hello']  # 可能的密码，填写在这里 possible passw
 DELETEIT = False  # 注意！设为真后，解压后将删除压缩包 DANGER!! If it is True,will delete rar file after extraction
 LOC_WINRAR = "C:\\Program Files\\WinRAR\\"  # location of WinRAR
 LOC_7Z = "C:\\Program Files\\7-Zip\\"  # location of 7-Zip
-# 如果文件后缀看上去不像压缩文件，就不解压，除非用户拖入的是文件
-# if the extension name of file doesn't look like a compressed file, then do nothing with it,
-# unless the user drag files into this script.
-
-SAVE_MODE = True
+SAVE_MODE = True 
+# SAVE_MODE: 为真时，如果文件后缀看上去不像压缩文件，就不尝试解压。除非用户只拖入了文件而没拖入文件夹
+# SAVE_MODE: If it is True, if the extension name of file doesn't look like a compressed file, then do nothing with it,
+# unless the user only drag files into this script.
 MULTI_UNRAR = DELETEIT and True  # 解压双重压缩文件 unzip double compressed files
 COLLECT_FILES = True  # 如果解压出的文件非常多且都在当前文件夹下，就会把它们移动到当前文件夹下的一个新的文件夹里
 # <<<<< 用户配置 you can change it
