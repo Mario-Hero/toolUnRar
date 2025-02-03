@@ -42,7 +42,7 @@ The passwords of compressed packages downloaded from the forum are usually the s
 
 ## 更新 Update Log
 
-**2025.02.03:**  新增参数 TRAVERSE_ALL_FOLDERS，为真时，遍历所有文件夹并解压缩。Add new parameter TRAVERSE_ALL_FOLDERS. If it is True, it will traverse all folders and decompress.
+**2025.02.03:**  新增参数 TRAVERSE_ALL_FOLDERS，为真时，遍历所有文件夹并解压缩。但是不在子文件夹里找密码。Add new parameter TRAVERSE_ALL_FOLDERS. If it is True, it will traverse all folders and decompress. But it will not search passwords in sub folders.
 
 **2022.11.04:**  支持Linux系统。Support Linux.
 
