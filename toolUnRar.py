@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 # _*_ coding: UTF-8 _*_
-
 # Created by Mario Chen, 04.04.2021, Shenzhen
 # My GitHub site: https://github.com/Mario-Hero
 import random
@@ -18,18 +17,18 @@ except ImportError:
     print('Please install chardet')
 
 # you can change it 用户配置 >>>>>
-DEFAULT_TARGET = '' # 直接执行该文件的默认的解压路径 The default decompression path when execute directly
-PASSWD = ['123456', 'hello']  # 可能的密码，填写在这里 possible passwords
-DELETEIT = False  # 注意！设为真后，解压后将删除压缩包 DANGER!! If it is True,will delete rar file after extraction
+DEFAULT_TARGET = ''
+PASSWD = ['hello','123456']  # 可能的密码 possible passwords
+DELETEIT = False  # 注意！解压后删除压缩包 DANGER!! If it is True,will delete rar file after extraction
 LOC_WINRAR = "C:\\Program Files\\WinRAR\\"  # location of WinRAR
 LOC_7Z = "C:\\Program Files\\7-Zip\\"  # location of 7-Zip
-SAVE_MODE = True 
+SAVE_MODE = True
 # SAVE_MODE: 为真时，如果文件后缀看上去不像压缩文件，就不尝试解压。除非用户只拖入了文件而没拖入文件夹
 # SAVE_MODE: If it is True, if the extension name of file doesn't look like a compressed file, then do nothing with it,
 # unless the user only drag files into this script.
 MULTI_UNRAR = DELETEIT and True  # 解压双重压缩文件 unzip double compressed files
 COLLECT_FILES = True  # 如果解压出的文件非常多且都在当前文件夹下，就会把它们移动到当前文件夹下的一个新的文件夹里
-TRAVERSE_ALL_FOLDERS = False # 为真时，遍历所有子文件夹并解压缩。但是不在子文件夹里找密码。  
+TRAVERSE_ALL_FOLDERS = False  # 为真时，遍历所有子文件夹并解压缩。但是不在子文件夹里找密码。
 # If it is True, it will traverse all folders and decompress. But it will not search passwords in sub folders.
 # <<<<< 用户配置 you can change it
 
@@ -84,7 +83,7 @@ class MyPasswordLib:
         self.lastPWD = ''
         self.traverseList = PASSWD.copy()
 
-    def printWD(self):
+    def print_wd(self):
         print("Key:")
         print(self.keyList)
         print("New:")
@@ -93,6 +92,7 @@ class MyPasswordLib:
         print(self.oldList)
 
     def add(self, pwd, isKey=True):
+        print(pwd)
         if pwd in self.keyList or pwd in self.newList or pwd in self.oldList:
             return False
         else:
@@ -102,7 +102,7 @@ class MyPasswordLib:
                 self.newList.append(pwd)
             return True
 
-    def updateLastPWD(self, pwd=''):
+    def update_last_pwd(self, pwd=''):
         if pwd:
             if self.lastPWD != pwd:
                 self.lastPWD = pwd
@@ -140,19 +140,19 @@ class MyPasswordLib:
 passwdlib = MyPasswordLib()
 
 
-def logError(comment):
+def log_error(comment):
     global ERROR_LIST
     ERROR_LIST += comment + '\n'
 
 
-def randomName():
-    randomFileName = 'RAR'
+def random_name():
+    random_file_name = 'RAR'
     for i in range(random.randint(8, 15)):
-        randomFileName += random.choice(VAR_STR)
-    return randomFileName
+        random_file_name += random.choice(VAR_STR)
+    return random_file_name
 
 
-def guessWDComment(comment):
+def guess_password_from_comment(comment):
     global passwdlib
     state = 0
     guessWD = []
@@ -194,7 +194,7 @@ def guessWDComment(comment):
                 if PSTemp == -1:
                     continue
                 else:
-                    if PSTemp < guessNewPS:
+                    if PSTemp < guessNewPS and comment.find('\n', guessPS, guessPS + PSTemp) == -1:
                         foundTemp = True
                         guessNewPS = PSTemp + len(startStr)
                         state = 2
@@ -247,11 +247,11 @@ def guessWDComment(comment):
     return guessWD
 
 
-def fileNameGuess(fileName):
+def guess_password_from_filename(fileName):
     global passwdlib
     for wd in GUESS_FLAG_INIT:
         if wd in fileName:
-            if guessWDComment(fileName):
+            if guess_password_from_comment(fileName):
                 return True
             else:
                 return False
@@ -263,19 +263,22 @@ def fileNameGuess(fileName):
     return addNewPWD
 
 
-def getPWFromFolder(file):
+def get_password_from_folder(file):
     addNewPWD = False
     if os.path.isdir(file):
         folderName = os.path.split(file)[1]
-        addNewPWD = fileNameGuess(folderName) | addNewPWD
+        addNewPWD = guess_password_from_filename(folderName) | addNewPWD
         file_list = os.listdir(file)
         for oneFile in file_list:
             if oneFile.endswith('.txt'):
                 oneFileName = oneFile[:-4]
-                addNewPWD = fileNameGuess(oneFileName) | addNewPWD
-                readTxtFile(os.path.join(file, oneFile))
+                addNewPWD = guess_password_from_filename(oneFileName) | addNewPWD
+                read_txt_file(os.path.join(file, oneFile))
             else:
-                addNewPWD = fileNameGuess(os.path.splitext(oneFile)[0]) | addNewPWD
+                if os.path.isdir(os.path.join(file, oneFile)):
+                    addNewPWD = guess_password_from_filename(oneFile) | addNewPWD
+                else:
+                    addNewPWD = guess_password_from_filename(os.path.splitext(oneFile)[0]) | addNewPWD
     else:
         parentFolder, fileName = os.path.split(file)
         if "." in fileName:
@@ -283,20 +286,20 @@ def getPWFromFolder(file):
         else:
             fileNamePart = fileName
         folderName = os.path.split(parentFolder)[1]
-        addNewPWD = fileNameGuess(fileNamePart) | addNewPWD
-        addNewPWD = fileNameGuess(folderName) | addNewPWD
+        addNewPWD = guess_password_from_filename(fileNamePart) | addNewPWD
+        addNewPWD = guess_password_from_filename(folderName) | addNewPWD
         file_list = os.listdir(parentFolder)
         for oneFile in file_list:
             if oneFile.endswith('.txt'):
                 oneFileName = oneFile[:-4]
-                addNewPWD = fileNameGuess(oneFileName) | addNewPWD
-                readTxtFile(os.path.join(parentFolder, oneFile))
+                addNewPWD = guess_password_from_filename(oneFileName) | addNewPWD
+                read_txt_file(os.path.join(parentFolder, oneFile))
             else:
-                addNewPWD = fileNameGuess(os.path.splitext(oneFile)[0]) | addNewPWD
+                addNewPWD = guess_password_from_filename(os.path.splitext(oneFile)[0]) | addNewPWD
     return addNewPWD
 
 
-def isCompressedFile(file, multiUnrar=False):
+def is_compressed_file(file, multiUnrar=False):
     if "." in file:
         fileExtension = file[file.rindex('.') + 1:].lower()
         if fileExtension in RAR_FILE:
@@ -308,7 +311,7 @@ def isCompressedFile(file, multiUnrar=False):
     return (not SAVE_MODE) or multiUnrar
 
 
-def fileRename(file, n):
+def file_rename(file, n):
     pathName, fileName = os.path.split(file)
     if '.' in fileName:
         cutPos = fileName.rfind('.')
@@ -317,7 +320,7 @@ def fileRename(file, n):
         return os.path.join(pathName, fileName + '(' + str(n) + ')')
 
 
-def winRarDo(folder, file, password):
+def winrar_do(folder, file, password):
     extM = subprocess.call(
         [os.path.join(LOC_WINRAR, PROGRAM_RAR), 'x', '-y', '-p' + password, os.path.join(folder, file), folder])
     # print("winrar", extM)
@@ -333,7 +336,7 @@ def winRarDo(folder, file, password):
         return 0
 
 
-def z7Do(folder, file, password):
+def z7_do(folder, file, password):
     extM = subprocess.call(
         [os.path.join(LOC_7Z, PROGRAM_7Z), 'x', '-y', '-p' + password,
          os.path.join(folder, file), '-o' + folder],
@@ -348,7 +351,7 @@ def z7Do(folder, file, password):
         return 0
 
 
-def unrarFun3(folder, file, multiPart=False):
+def unrar_fun3(folder, file, multiPart=False):
     global passwdlib
     successThisFile = False
     if not folder:
@@ -359,18 +362,18 @@ def unrarFun3(folder, file, multiPart=False):
             fileExtension = file[file.rindex('.'):]
         else:
             fileExtension = ''
-        dt_ms = randomName() + fileExtension
+        dt_ms = random_name() + fileExtension
         # dt_ms = 'RAR' + datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
         while os.path.exists(os.path.join(folder, dt_ms)):
-            dt_ms = randomName() + fileExtension
+            dt_ms = random_name() + fileExtension
         os.rename(os.path.join(folder, file), os.path.join(folder, dt_ms))
         file = dt_ms
 
     if ENABLE_RAR and file.endswith('.rar'):
         if passwdlib.lastPWD:
-            winRarReturn = winRarDo(folder, file, passwdlib.lastPWD)
+            winRarReturn = winrar_do(folder, file, passwdlib.lastPWD)
         else:
-            winRarReturn = winRarDo(folder, file, '666')
+            winRarReturn = winrar_do(folder, file, '666')
         if winRarReturn == 0:
             successThisFile = True
         elif winRarReturn == 2:
@@ -395,17 +398,17 @@ def unrarFun3(folder, file, multiPart=False):
                         # print(comment)
                         if comment:
                             # wdArray = guessWDComment(comment)
-                            guessWDComment(comment)
-                            passwdlib.updateLastPWD()
+                            guess_password_from_comment(comment)
+                            passwdlib.update_last_pwd()
                             # print("Possible passwords:", wdArray)
             if not successThisFile:
                 for wd in passwdlib.traverseList:
-                    winRarReturn = winRarDo(folder, file, wd)
+                    winRarReturn = winrar_do(folder, file, wd)
                     if winRarReturn == 1:
                         continue
                     elif winRarReturn == 0:
                         successThisFile = True
-                        passwdlib.updateLastPWD(wd)
+                        passwdlib.update_last_pwd(wd)
                         break
                     elif winRarReturn == 2:
                         break
@@ -414,22 +417,22 @@ def unrarFun3(folder, file, multiPart=False):
     elif ENABLE_7Z:
         if not successThisFile:
             for wd in passwdlib.traverseList:
-                z7Return = z7Do(folder, file, wd)
+                z7Return = z7_do(folder, file, wd)
                 if z7Return == 1:
                     continue
                 elif z7Return == 3:
-                    logError("Broken file: " + file)
+                    log_error("Broken file: " + file)
                     break
                 else:
                     successThisFile = True
-                    passwdlib.updateLastPWD(wd)
+                    passwdlib.update_last_pwd(wd)
                     break
 
     if not successThisFile:
         if RENAME_UNRAR and not multiPart:
             os.rename(os.path.join(folder, file),
                       os.path.join(folder, originalName))
-        logError("No passsword for: " + originalName)
+        log_error("No passsword for: " + originalName)
     else:
         if DELETEIT:
             if multiPart:
@@ -437,20 +440,20 @@ def unrarFun3(folder, file, multiPart=False):
                     os.remove(os.path.join(folder, multiFile))
             else:
                 os.remove(os.path.join(folder, file))
-            multiLevelUnrar()
-            collectFiles()
+            multi_level_unrar()
+            collect_files()
         elif RENAME_UNRAR and not multiPart:
             moveTemp = os.path.join(folder, originalName)
             originalPath = moveTemp
             i = 0
             while os.path.exists(moveTemp):
                 i += 1
-                moveTemp = fileRename(originalPath, i)
+                moveTemp = file_rename(originalPath, i)
             os.rename(os.path.join(folder, file), moveTemp)
-            collectFiles()
+            collect_files()
 
 
-def collectFiles():
+def collect_files():
     global workSpace, lastFileName, lastFileSize, lastSpaceFiles, newSpaceFiles, lastFileStartName, lastMultiPart
     if COLLECT_FILES:
         newFileList = []
@@ -477,53 +480,53 @@ def collectFiles():
                 shutil.move(os.path.join(workSpace, file), newFolderPath)
 
 
-def readTxtFile(txtFile):
+def read_txt_file(txtFile):
     if chardetEnable:
         f = open(txtFile, 'rb')
         data = f.read()
         fileEncoding = chardet.detect(data).get('encoding')
         with open(txtFile, 'r', encoding=fileEncoding) as ff:
-            guessWDComment(ff.read())
+            guess_password_from_comment(ff.read())
     else:
         try:
             with open(txtFile, 'r') as f:
-                guessWDComment(f.read())
+                guess_password_from_comment(f.read())
         except:
             try:
                 with open(txtFile, 'r', encoding='utf-8') as f:
-                    guessWDComment(f.read())
+                    guess_password_from_comment(f.read())
             except:
                 pass
 
 
-def multiLevelUnrar():
+def multi_level_unrar():
     global workSpace, lastFileName, lastFileSize, lastSpaceFiles, newSpaceFiles
     if MULTI_UNRAR:
         newSpaceFiles = os.listdir(workSpace)
-        getPWFromFolder(workSpace)
+        get_password_from_folder(workSpace)
         for file in newSpaceFiles:
             if os.path.isfile(os.path.join(workSpace, file)):
                 if file not in lastSpaceFiles or (file == lastFileName and DELETEIT):
                     newFileSize = os.path.getsize(
                         os.path.join(workSpace, file))
-                    if newFileSize * 1.3 > lastFileSize or isMultiFile(file):
-                        if unrarFun2(os.path.join(workSpace, file), True):
+                    if newFileSize * 1.3 > lastFileSize or is_multi_file(file):
+                        if unrar_fun2(os.path.join(workSpace, file), True):
                             break
             else:
                 if file not in lastSpaceFiles:
-                    getPWFromFolder(os.path.join(workSpace, file))
+                    get_password_from_folder(os.path.join(workSpace, file))
                     newFileList = os.listdir(os.path.join(workSpace, file))
                     if len(newFileList) < 5:
                         for rarFile in newFileList:
                             filePath = os.path.join(workSpace, file, rarFile)
-                            if isCompressedFile(filePath):
+                            if is_compressed_file(filePath):
                                 newFileSize = os.path.getsize(filePath)
-                                if newFileSize * 1.3 > lastFileSize or isMultiFile(file):
-                                    if unrarFun2(filePath, True):
+                                if newFileSize * 1.3 > lastFileSize or is_multi_file(file):
+                                    if unrar_fun2(filePath, True):
                                         break
 
 
-def getMultiPartInFolder(folder, startName, ext, rarType):
+def get_multi_part_in_folder(folder, startName, ext, rarType):
     # rarType: 0:like abc.7z.001
     #          1:like abc.part1.rar
     #          2:like abc.zip, abc.z01
@@ -556,7 +559,7 @@ def getMultiPartInFolder(folder, startName, ext, rarType):
     return fileList
 
 
-def getMultiPart(filePath):
+def get_multi_part(filePath):
     # rarType: 0:like abc.7z.001
     #          1:like abc.part1.rar
     #          2:like abc.zip, abc.z01
@@ -566,7 +569,7 @@ def getMultiPart(filePath):
         nameSplit = name.split('.')
         if len(nameSplit) <= 2:
             if nameSplit[1] == 'zip' or (nameSplit[1].startswith('z') and nameSplit[1][-1].isdigit()):
-                return getMultiPartInFolder(parentFolder, nameSplit[0], 'zip', 2)
+                return get_multi_part_in_folder(parentFolder, nameSplit[0], 'zip', 2)
             else:
                 return []
         elif len(nameSplit) > 3:
@@ -596,46 +599,46 @@ def getMultiPart(filePath):
             if endExt:
                 rarType = 1
                 # print(endExt)
-                return getMultiPartInFolder(parentFolder, startName, endExt, rarType)
+                return get_multi_part_in_folder(parentFolder, startName, endExt, rarType)
             elif middleExt:
                 rarType = 0
                 # print(middleExt)
-                return getMultiPartInFolder(parentFolder, startName, middleExt, rarType)
+                return get_multi_part_in_folder(parentFolder, startName, middleExt, rarType)
     return []  # doesn't find multipart files
 
 
-def isMultiFile(multiFile):
+def is_multi_file(multiFile):
     return multiFile.endswith('.zip') or multiFile.endswith(
         '.001') or '.part1.' in multiFile or '.part01.' in multiFile or '.part001.' in multiFile
 
 
-def unrarFun2(filePath, multiUnrar=False):
+def unrar_fun2(filePath, multiUnrar=False):
     global lastFileName, lastFileSize, multiPartList, lastMultiPart, multiPartExtracted
-    multiPartList = getMultiPart(filePath)
+    multiPartList = get_multi_part(filePath)
     if multiPartList:
         if len(multiPartList) > 1:
             if not multiPartList[0] in multiPartExtracted:
                 multiPartExtracted.extend(multiPartList)
                 for multiFile in multiPartList:
-                    if isMultiFile(multiFile):
+                    if is_multi_file(multiFile):
                         lastFileName = multiFile
                         lastMultiPart = True
                         lastFileSize = os.path.getsize(os.path.join(
                             workSpace, multiFile)) * len(multiPartList)
-                        unrarFun3(workSpace, multiFile, True)
+                        unrar_fun3(workSpace, multiFile, True)
                         return True
         else:
             return False
-    elif isCompressedFile(filePath, multiUnrar):
+    elif is_compressed_file(filePath, multiUnrar):
         lastFileName = os.path.split(filePath)[1]
         lastMultiPart = False
         lastFileSize = os.path.getsize(filePath)
-        unrarFun3('', filePath)
+        unrar_fun3('', filePath)
         return True
     return False
 
 
-def unrarFun1(folder):
+def unrar_fun1(folder):
     global workSpace, lastSpaceFiles
     if os.path.exists(folder):
         if os.path.isdir(folder):
@@ -647,14 +650,14 @@ def unrarFun1(folder):
                 filePath = os.path.join(folder, file)
                 if os.path.exists(filePath):
                     if os.path.isfile(filePath):
-                        unrarFun2(filePath)
+                        unrar_fun2(filePath)
                     elif TRAVERSE_ALL_FOLDERS:
-                        unrarFun1(filePath)
+                        unrar_fun1(filePath)
 
         else:
             workSpace = os.path.split(folder)[0]
             lastSpaceFiles = os.listdir(workSpace)
-            unrarFun2(folder)
+            unrar_fun2(folder)
 
 
 if __name__ == '__main__':
@@ -685,7 +688,7 @@ if __name__ == '__main__':
         if (not ENABLE_RAR) and (not ENABLE_7Z):
             print("Cannot find winRAR or 7-zip")
             sys.exit(1)
-    else: # Linux or Mac
+    else:  # Linux or Mac
         pause_command = PAUSE_COMMAND_LINUX
         LOC_7Z = os.getcwd()
         PROGRAM_7Z = PROGRAM_7Z_LINUX if platform.system() == 'Linux' else PROGRAM_7Z_MAC  # 'Darwin' is Mac
@@ -703,29 +706,30 @@ if __name__ == '__main__':
         if os.path.exists(sys.argv[1]) and os.path.isfile(sys.argv[1]):
             SAVE_MODE = False
         # print(PASSWD)
-        passwdlib.updateLastPWD()
+        passwdlib.update_last_pwd()
         if not checkEveryFilePassWD:
-            if getPWFromFolder(sys.argv[1]):
-                passwdlib.updateLastPWD()
+            if get_password_from_folder(sys.argv[1]):
+                passwdlib.update_last_pwd()
         for inputFolder in sys.argv[1:]:
             if not os.path.exists(inputFolder):
                 print(inputFolder + " not exists.")
                 continue
-            if checkEveryFilePassWD and getPWFromFolder(inputFolder):
-                passwdlib.updateLastPWD()
-            unrarFun1(inputFolder)
+            if checkEveryFilePassWD and get_password_from_folder(inputFolder):
+                passwdlib.update_last_pwd()
+                # passwdlib.printWD()
+            unrar_fun1(inputFolder)
 
         print("Finish.")
         if ERROR_LIST:
             print(ERROR_LIST)
             os.system(pause_command)
     elif DEFAULT_TARGET:
-        getPWFromFolder(DEFAULT_TARGET)
+        get_password_from_folder(DEFAULT_TARGET)
         if os.path.isfile(DEFAULT_TARGET):
             SAVE_MODE = False
         # print(PASSWD)
-        passwdlib.updateLastPWD()
-        unrarFun1(DEFAULT_TARGET)
+        passwdlib.update_last_pwd()
+        unrar_fun1(DEFAULT_TARGET)
         print("Finish.")
         if ERROR_LIST:
             print(ERROR_LIST)
