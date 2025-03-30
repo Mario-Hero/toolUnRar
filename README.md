@@ -1,6 +1,6 @@
 # toolUnRar
 
-**Last Update: 2025.02.03**
+**Last Update: 2025.03.30**
 
 
 
@@ -41,6 +41,8 @@ The passwords of compressed packages downloaded from the forum are usually the s
 <br>
 
 ## 更新 Update Log
+
+**2025.03.30:**  在解压过程中就判断是否密码错误，直接退出并尝试下一个密码。DURING the decompression process, check if the password is incorrect. If so, exit directly and try the next password.
 
 **2025.02.03:**  新增参数 TRAVERSE_ALL_FOLDERS，为真时，遍历所有文件夹并解压缩。但是不在子文件夹里找密码。Add new parameter TRAVERSE_ALL_FOLDERS. If it is True, it will traverse all folders and decompress. But it will not search passwords in sub folders.
 
