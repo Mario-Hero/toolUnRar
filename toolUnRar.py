@@ -51,7 +51,7 @@ NOT_RAR_FILE = {"jpg", "exe", "png", "mkv", "mp4", "mp3", "avi", "mov", "jpeg", 
                 "doc", "docx", "ppt", "pptx", "xls", "xlsx", "html", "wps", "torrent", "swf", "bmp", "crdownload",
                 "xltd", "downloading", "py", "lnk"}
 
-QUIT_KEYWORD = {'CRC Failed', 'Wrong password', '密码错误'}
+QUIT_KEYWORD = {'CRC Failed', 'Data Error in encrypted file'}
 
 VAR_STR = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
 PAUSE_COMMAND_WINDOWS = "pause"
