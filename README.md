@@ -1,6 +1,6 @@
 # toolUnRar
 
-**Last Update: 2025.03.30**
+**Last Update: 2025.04.02**
 
 
 
@@ -41,6 +41,8 @@ The passwords of compressed packages downloaded from the forum are usually the s
 <br>
 
 ## 更新 Update Log
+
+**2025.04.02:**  新增参数 MAKE_FOLDER ，为真时，创建与压缩文件同名的文件夹，并解压内容到其中。 Will generate a folder with the same name as the compressed file and decompress the content into it if MAKE_FOLDER  is True.
 
 **2025.03.30:**  在解压过程中就判断是否密码错误，直接退出并尝试下一个密码。DURING the decompression process, check if the password is incorrect. If so, exit directly and try the next password.
 
@@ -96,9 +98,13 @@ Download all the files of this project. The 7zzs inside is a 7z decompressor und
 
 ## 用法 Usage
 
-Windows系统下，直接拖入文件夹或压缩文件到Python脚本toolUnRar.py上（或者脚本的快捷方式上）即可批量解压缩包含密码的压缩文件。如果拖入的是文件夹，则会把该文件夹下的压缩文件解压缩，但不进入下一级目录。通过设置PASSWD来设置字典，通过设置DELETEIT来设置解压后是否删除被成功解压的压缩文件。本脚本会通过文件的后缀识别该文件是否为压缩文件。
+Windows系统下，直接拖入文件夹或压缩文件到Python脚本toolUnRar.py上（或者脚本的快捷方式上）即可批量解压缩包含密码的压缩文件。如果拖入的是文件夹，则会把该文件夹下的压缩文件解压缩，但不进入下一级目录。
 
-If you are using Windows, just drag folders or compressed files into the toolUnRar.py python script (or its shortcut) to decompress the compressed file. If a folder is dragged in, the compressed files under the folder will be decompressed, but will not enter the child folders. Set the dictionary by setting parameter PASSWD and whether to delete the successfully decompressed compressed file after decompression by setting parameter  DELETEIT. This script will identify whether the file is a compressed file through the extention of the file.
+通过设置 PASSWD 来设置字典，通过设置 DELETEIT 来设置解压后是否删除被成功解压的压缩文件。本脚本会通过文件的后缀识别该文件是否为压缩文件。
+
+If you are using Windows, just drag folders or compressed files into the toolUnRar.py python script (or its shortcut) to decompress the compressed file. If a folder is dragged in, the compressed files under the folder will be decompressed, but will not enter the child folders. 
+
+Set the dictionary by setting parameter PASSWD and whether to delete the successfully decompressed compressed file after decompression by setting parameter  DELETEIT. This script will identify whether the file is a compressed file through the extention of the file.
 
 <br>
 
@@ -137,7 +143,7 @@ DEFAULT_TARGET = 'Path'：If you just double click the script, the DEFAULT_TARGE
 
 <br>
 
-PASSWD = ["hello","123456"] ：你的密码本，该脚本会从这个数组中不断试验密码来解压缩，直到成功为止。
+PASSWD = ["hello","123456"] ：你的密码列表，该脚本会从这个数组中不断试验密码来解压缩，直到成功为止。
 
 PASSWD = ["hello","123456"] ： your passwords.
 
@@ -158,6 +164,12 @@ SAVE_MODE = True：If the script cannot recognize the format of file from it's e
 MULTI_UNRAR = DELETEIT and True：为真时支持双重解压，要求DELETEIT也为真。
 
 MULTI_UNRAR = DELETEIT and True：Unzip double compressed files if MULTI_UNRAR and DELETEIT is True
+
+<br>
+
+MAKE_FOLDER = False: 为真时，创建与压缩文件同名的文件夹，并解压内容到其中。 
+
+MAKE_FOLDER = False: Will generate a folder with the same name as the compressed file and decompress the content into it if MAKE_FOLDER  is True.
 
 ## License
 

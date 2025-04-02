@@ -13,7 +13,6 @@ import platform
 chardetEnable = False
 try:
     import chardet
-
     chardetEnable = True
 except ImportError:
     print('Please install chardet')
@@ -32,6 +31,8 @@ MULTI_UNRAR = DELETEIT and True  # 解压双重压缩文件 unzip double compres
 COLLECT_FILES = True  # 如果解压出的文件非常多且都在当前文件夹下，就会把它们移动到当前文件夹下的一个新的文件夹里
 TRAVERSE_ALL_FOLDERS = False  # 为真时，遍历所有子文件夹并解压缩。但是不在子文件夹里找密码。
 # If it is True, it will traverse all folders and decompress. But it will not search passwords in sub folders.
+MAKE_FOLDER = False # 创建与压缩文件同名的文件夹，并解压内容到其中
+# Generate a folder with the same name as the compressed file and decompress the content into it
 # <<<<< 用户配置 you can change it
 
 
@@ -58,7 +59,8 @@ PAUSE_COMMAND_WINDOWS = "pause"
 PAUSE_COMMAND_LINUX = "read -n1 -p \"Press any key to continue...\""
 ENABLE_RAR = False  # initial state only
 ENABLE_7Z = False  # initial state only
-RENAME_UNRAR = True  # 防止解压的文件与压缩包重名 In order to prevent that the decompressed file has the same name with current file, we rename the compressed file first
+RENAME_UNRAR = True # 防止解压的文件与压缩包重名
+# In order to prevent the decompressed file has the same name with current file, we rename the compressed file first
 
 # for guessing >>>
 GUESS_FLAG_INIT = ["密码", "码", "password", "Password"]  # state 0
@@ -350,18 +352,22 @@ def run_command(command):
             break
         if output:
             print(output.strip())
-            for word in QUIT_KEYWORD:
-                if word in output:
-                    process.terminate()
-                    return 99
+            if any(word in output for word in QUIT_KEYWORD):
+                process.terminate()
+                process.wait()
+                return 99
 
     return process.returncode
 
 
-def winrar_do(folder, file, password):
+def winrar_do(folder, file, original_name_without_ext, password):
     """用WinRAR解压缩 Use WinRAR to decompress"""
+    if MAKE_FOLDER:
+        target_folder = os.path.join(folder, original_name_without_ext + os.path.sep)
+    else:
+        target_folder = folder
     extM = run_command(
-        [os.path.join(LOC_WINRAR, PROGRAM_RAR), 'x', '-y', '-p' + password, os.path.join(folder, file), folder])
+        [os.path.join(LOC_WINRAR, PROGRAM_RAR), 'x', '-y', '-p' + password, os.path.join(folder, file), target_folder])
     # print("winrar", extM)
     if extM == 1:  # not rar file
         return 2
@@ -376,10 +382,14 @@ def winrar_do(folder, file, password):
         return 0
 
 
-def z7_do(folder, file, password):
+def z7_do(folder, file, original_name_without_ext, password):
     """用7-Zip解压缩 Use 7-Zip to decompress"""
+    if MAKE_FOLDER:
+        target_folder = os.path.join(folder, original_name_without_ext + os.path.sep)
+    else:
+        target_folder = folder
     extM = run_command([os.path.join(LOC_7Z, PROGRAM_7Z), 'x', '-y', '-p' + password,
-                        os.path.join(folder, file), '-o' + folder])
+                        os.path.join(folder, file), '-o' + target_folder])
     # print("7z", extM)
     if extM != 0:  # error
         return 1
@@ -390,41 +400,39 @@ def z7_do(folder, file, password):
 
 def unrar_fun3(folder, file, multiPart=False):
     global passwdlib
-    successThisFile = False
+    success_this_file = False
     if not folder:
         folder, file = os.path.split(file)
-    originalName = file
-    shouldUseWinRAR = file.endswith('.rar')
+    original_name = file
+    original_name_without_ext = os.path.splitext(file)[0]
+    should_use_winrar = file.endswith('.rar')
     if RENAME_UNRAR and not multiPart:  # 分卷解压不重命名 Multipart file decompression without renaming
-        if '.' in file:
-            fileExtension = file[file.rindex('.'):]
-        else:
-            fileExtension = ''
-        dt_ms = random_name() + fileExtension
+        file_ext = os.path.splitext(file)[1]
+        dest_name = random_name() + file_ext
         # dt_ms = 'RAR' + datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
-        while os.path.exists(os.path.join(folder, dt_ms)):
-            dt_ms = random_name() + fileExtension
-        os.rename(os.path.join(folder, file), os.path.join(folder, dt_ms))
-        file = dt_ms
+        while os.path.exists(os.path.join(folder, dest_name)):
+            dest_name = random_name() + file_ext
+        os.rename(os.path.join(folder, file), os.path.join(folder, dest_name))
+        file = dest_name
 
-    if (ENABLE_RAR and shouldUseWinRAR) or not ENABLE_7Z:
+    if (ENABLE_RAR and should_use_winrar) or not ENABLE_7Z:
         if passwdlib.lastPWD:
-            winRarReturn = winrar_do(folder, file, passwdlib.lastPWD)
+            winrar_ret = winrar_do(folder, file, original_name_without_ext, passwdlib.lastPWD)
         else:
-            winRarReturn = winrar_do(folder, file, '123')
-        if winRarReturn == 0:
-            successThisFile = True
-        elif winRarReturn == 2:
-            shouldUseWinRAR = False
+            winrar_ret = winrar_do(folder, file, original_name_without_ext, '123')
+        if winrar_ret == 0:
+            success_this_file = True
+        elif winrar_ret == 2:
+            should_use_winrar = False
         else:
-            getCommentStr = " l -p0 -z" + " \"" + folder + "\\" + file + "\""
-            print("\"" + LOC_WINRAR + PROGRAM_RAR + "\"" + getCommentStr)
+            getCommentStr = " l -p0 -z" + " \"" + folder + "\\" + file + '"'
+            print('"' + LOC_WINRAR + PROGRAM_RAR + '"' + getCommentStr)
             commentNumber = subprocess.call(
-                "\"" + LOC_WINRAR + PROGRAM_RAR + "\"" + getCommentStr)
+                '"' + LOC_WINRAR + PROGRAM_RAR + '"' + getCommentStr)
 
             if commentNumber == 0:
                 commentM = subprocess.getstatusoutput(
-                    "\"" + LOC_WINRAR + PROGRAM_RAR + "\"" + getCommentStr)
+                    '"' + LOC_WINRAR + PROGRAM_RAR + '"' + getCommentStr)
                 if commentM[0] == 0:
                     try:
                         comment = commentM[1][(commentM[1].index(
@@ -439,37 +447,37 @@ def unrar_fun3(folder, file, multiPart=False):
                             guess_password_from_comment(comment)
                             passwdlib.update_last_pwd()
                             # print("Possible passwords:", wdArray)
-            if not successThisFile:
+            if not success_this_file:
                 for wd in passwdlib.traverseList:
-                    winRarReturn = winrar_do(folder, file, wd)
-                    if winRarReturn == 1:
+                    winrar_ret = winrar_do(folder, file, original_name_without_ext, wd)
+                    if winrar_ret == 1:
                         continue
-                    elif winRarReturn == 0:
-                        successThisFile = True
+                    elif winrar_ret == 0:
+                        success_this_file = True
                         passwdlib.update_last_pwd(wd)
                         break
-                    elif winRarReturn == 2:
+                    elif winrar_ret == 2:
                         break
                     else:
                         break
-    if ((not ENABLE_RAR) or (not shouldUseWinRAR)) and ENABLE_7Z and not successThisFile:
+    if ((not ENABLE_RAR) or (not should_use_winrar)) and ENABLE_7Z and not success_this_file:
         for wd in passwdlib.traverseList:
-            z7Return = z7_do(folder, file, wd)
-            if z7Return == 1:
+            z7_ret = z7_do(folder, file, original_name_without_ext, wd)
+            if z7_ret == 1:
                 continue
-            elif z7Return == 3:
+            elif z7_ret == 3:
                 log_error("Broken file: " + file)
                 break
             else:
-                successThisFile = True
+                success_this_file = True
                 passwdlib.update_last_pwd(wd)
                 break
 
-    if not successThisFile:
+    if not success_this_file:
         if RENAME_UNRAR and not multiPart:
             os.rename(os.path.join(folder, file),
-                      os.path.join(folder, originalName))
-        log_error("No passsword for: " + originalName)
+                      os.path.join(folder, original_name))
+        log_error("No passsword for: " + original_name)
     else:
         if DELETEIT:
             if multiPart:
@@ -480,7 +488,7 @@ def unrar_fun3(folder, file, multiPart=False):
             multi_level_unrar()
             collect_files()
         elif RENAME_UNRAR and not multiPart:
-            moveTemp = os.path.join(folder, originalName)
+            moveTemp = os.path.join(folder, original_name)
             originalPath = moveTemp
             i = 0
             while os.path.exists(moveTemp):
