@@ -203,7 +203,7 @@ def guess_password_from_comment(comment):
             foundTemp2 = False
             guessNewPS = len(comment)
             for startStr in GUESS_FLAG_START_1:
-                PSTemp = comment.find(startStr, guessPS, guessPS + 20)
+                PSTemp = comment.find(startStr, guessPS, guessPS + 3 + len(startStr))
                 if PSTemp == -1:
                     continue
                 else:
@@ -218,7 +218,7 @@ def guess_password_from_comment(comment):
             else:
                 guessNewPS = len(comment)
                 for startStr in GUESS_FLAG_START_2:
-                    PSTemp = comment.find(startStr, guessPS, guessPS + 20)
+                    PSTemp = comment.find(startStr, guessPS, guessPS + 3 + len(startStr))
                     if PSTemp == -1:
                         continue
                     else:
